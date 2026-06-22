@@ -45,6 +45,7 @@ func main() {
 	vm := flag.Bool("vm", false, "output von Mangoldt-weighted covariance matrix as JSON")
 	fastVM := flag.Bool("fast-vm", false, "optimized von Mangoldt operator (fast)")
 	stream := flag.Bool("stream", false, "streaming matrix builder (for order 11+)")
+	spatial := flag.Bool("spatial", false, "use spatial (face-adjacent) covariance")
 	h4d := flag.Bool("4d", false, "use 4D Hilbert curve (16^n cells)")
 	compare := flag.Bool("compare", false, "compare all variants for best plane alignment")
 	flag.Parse()
@@ -114,6 +115,10 @@ func main() {
 	// ── Plane alignment analysis ───────────────────────────────────────
 	if *h4d {
 		outputMatrix4D(primes, uint32(*n), *planeVariant)
+		return
+	}
+	if *spatial {
+		outputMatrixSpatial(primes, uint32(*n), *planeVariant)
 		return
 	}
 	if *stream {
@@ -2210,3 +2215,88 @@ func outputMatrix4D(primes []uint64, order uint32, variant int) {
 	fmt.Println("  ]")
 	fmt.Println("}")
 }
+
+// outputMatrixSpatial builds the covariance matrix using spatially adjacent
+// cell pairs in the 3D grid (6 face-neighbors per cell), NOT curve-adjacent
+// integer pairs. This directly measures spatial clustering of primes.
+func outputMatrixSpatial(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	total := dim * dim * dim
+	fmt.Fprintf(os.Stderr, "Spatial order %d: %dx%d, %d primes, %d cells\n",
+		order, dim, dim, len(primes), total)
+
+	curve := build3DCurve(order, variant)
+
+	// Build prime occupancy grid
+	hits := make([]uint8, total)
+	primeSet := make(map[uint64]bool, len(primes))
+	for _, p := range primes {
+		if int(p) < total { primeSet[p] = true }
+	}
+	for k := 0; k < total; k++ {
+		if primeSet[uint64(k)] { hits[curve[k]] = 1 }
+	}
+
+	// Plane means
+	planeSize := make([]int, dim)
+	mu := make([]float64, dim)
+	for z := 0; z < dim; z++ {
+		planeSize[z] = dim * dim
+		for y := 0; y < dim; y++ {
+			for x := 0; x < dim; x++ {
+				if hits[z*dim*dim+y*dim+x] == 1 { mu[z]++ }
+			}
+		}
+		mu[z] /= float64(planeSize[z])
+	}
+
+	// Spatial covariance: 6 face-neighbors per cell
+	cov := make([][]float64, dim)
+	for i := range cov { cov[i] = make([]float64, dim) }
+	counts := make([][]int, dim)
+	for i := range counts { counts[i] = make([]int, dim) }
+
+	dirs := [][3]int{{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1}}
+	for z := 0; z < dim; z++ {
+		for y := 0; y < dim; y++ {
+			for x := 0; x < dim; x++ {
+				idx1 := z*dim*dim + y*dim + x
+				i1 := 0.0; if hits[idx1]==1 { i1 = 1.0 }
+				for _, d := range dirs {
+					nx, ny, nz := x+d[0], y+d[1], z+d[2]
+					if nx<0||nx>=dim||ny<0||ny>=dim||nz<0||nz>=dim { continue }
+					idx2 := nz*dim*dim + ny*dim + nx
+					i2 := 0.0; if hits[idx2]==1 { i2 = 1.0 }
+					cov[z][nz] += (i1-mu[z])*(i2-mu[nz])
+					counts[z][nz]++
+				}
+			}
+		}
+	}
+
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := 0; z2 < dim; z2++ {
+			if counts[z1][z2] > 0 { cov[z1][z2] /= float64(counts[z1][z2]) }
+		}
+	}
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := z1+1; z2 < dim; z2++ {
+			avg := (cov[z1][z2]+cov[z2][z1])/2.0
+			cov[z1][z2] = avg; cov[z2][z1] = avg
+		}
+	}
+
+	fmt.Println("{")
+	fmt.Printf("  \"order\": %d,\n  \"dim\": %d,\n  \"primes\": %d,\n  \"method\": \"spatial\",\n", order, dim, len(primes))
+	fmt.Println("  \"mu\": [")
+	for z := 0; z < dim; z++ { fmt.Printf("    %.10f%s\n", mu[z], comma(z==dim-1)) }
+	fmt.Println("  ],\n  \"covariance\": [")
+	for z1 := 0; z1 < dim; z1++ {
+		fmt.Print("    [")
+		for z2 := 0; z2 < dim; z2++ { fmt.Printf("%.12f%s", cov[z1][z2], comma(z2==dim-1)) }
+		fmt.Printf("]%s\n", comma(z1==dim-1))
+	}
+	fmt.Println("  ]\n}")
+}
+
+func comma(last bool) string { if last { return "" }; return "," }
