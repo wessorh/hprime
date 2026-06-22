@@ -1,0 +1,1082 @@
+// hprime — primes on 3D Hilbert curves
+//
+// Computes primes < 8^n using a parallel sieve, maps them onto multiple
+// 3D Hilbert curve variants, and tests for alignment (do primes cluster
+// along certain curve segments?).
+//
+// Usage:
+//   hprime -n 4                    # primes < 8^4 = 4096
+//   hprime -n 5 -variants 10      # test 10 curve variants
+//   hprime -n 6 -align            # run alignment test
+
+package main
+
+import (
+	"flag"
+	"fmt"
+	"image"
+	"image/color"
+	"image/png"
+	"math"
+	"math/big"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"sort"
+	"strings"
+	"sync"
+)
+
+func main() {
+	n := flag.Int("n", 4, "compute primes < 8^n")
+	variants := flag.Int("variants", 8, "number of 3D Hilbert curve variants to test")
+	align := flag.Bool("align", false, "run alignment analysis")
+	movie := flag.Bool("movie", false, "render rotating 3D cube movie")
+	movieVariant := flag.Int("movie-variant", 0, "curve variant for movie")
+	movieOut := flag.String("movie-out", "/tmp/hprime_cube.mp4", "movie output path")
+	movieFrames := flag.Int("movie-frames", 180, "number of rotation frames")
+	planes := flag.Bool("planes", false, "run plane-alignment analysis")
+	planeVariant := flag.Int("plane-variant", 0, "curve variant for plane test")
+	correlate := flag.Bool("correlate", false, "run zeta correlation test")
+	compare := flag.Bool("compare", false, "compare all variants for best plane alignment")
+	flag.Parse()
+
+	limit := pow64(8, *n)
+	fmt.Printf("=== hprime — primes on 3D Hilbert curves ===\n")
+	fmt.Printf("limit:       8^%d = %d\n", *n, limit)
+	fmt.Printf("variants:    %d\n", *variants)
+	fmt.Printf("curve order: %d  (grid: %d×%d×%d = %d points)\n",
+		*n, 1<<*n, 1<<*n, 1<<*n, pow64(1<<*n, 3))
+
+	// Estimate 3D Hilbert curve count
+	estimateCurves(*n)
+
+	// Compute primes in parallel
+	fmt.Printf("\n── Computing primes < %d …\n", limit)
+	primes := parallelSieve(limit)
+	fmt.Printf("found %d primes (%.4f%% of range)\n", len(primes),
+		float64(len(primes))/float64(limit)*100)
+
+	// Test multiple 3D Hilbert curve variants
+	for v := 0; v < *variants; v++ {
+		kind := describeVariant(v)
+		fmt.Printf("\n── Variant %d: %s\n", v, kind)
+
+		// Build the curve mapping
+		order := uint32(*n)
+		curve := build3DCurve(order, v)
+
+		// Map primes onto the curve
+		hits := make([]int, len(curve))
+		for _, p := range primes {
+			if int(p) < len(curve) {
+				hits[curve[p]]++
+			}
+		}
+
+		// Basic stats
+		occupied := 0
+		maxHit := 0
+		for _, h := range hits {
+			if h > 0 {
+				occupied++
+				if h > maxHit {
+					maxHit = h
+				}
+			}
+		}
+		fmt.Printf("  occupied cells: %d / %d (%.2f%%)\n",
+			occupied, len(curve), float64(occupied)/float64(len(curve))*100)
+		fmt.Printf("  max primes/cell: %d\n", maxHit)
+		fmt.Printf("  avg primes/cell: %.4f\n", float64(len(primes))/float64(len(curve)))
+
+		// Alignment test
+		if *align || v < 3 {
+			score := testAlignment(hits, order)
+			fmt.Printf("  alignment score: %.4f  (%s)\n",
+				score, classifyAlignment(score, order))
+		}
+	}
+
+	// ── Movie generation ───────────────────────────────────────────────
+	if *movie {
+		renderMovie(primes, uint32(*n), *movieVariant, *movieOut, *movieFrames)
+	}
+
+	// ── Plane alignment analysis ───────────────────────────────────────
+	if *correlate {
+		runCorrelationTest(primes, uint32(*n), *planeVariant)
+		return
+	}
+	if *compare {
+		compareAllVariants(primes, uint32(*n))
+		return
+	}
+	if *planes {
+		analyzePlanes(primes, uint32(*n), *planeVariant)
+	}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Prime sieve — parallel segmented
+// ─────────────────────────────────────────────────────────────────────────────
+
+func parallelSieve(limit uint64) []uint64 {
+	if limit < 2 {
+		return nil
+	}
+	sqrtLimit := uint64(math.Sqrt(float64(limit))) + 1
+
+	// Small primes via sequential sieve
+	small := simpleSieve(sqrtLimit)
+
+	// Segment size
+	segSize := uint64(1 << 18) // 256K
+	workers := runtime.NumCPU()
+
+	var mu sync.Mutex
+	var allPrimes []uint64
+	allPrimes = append(allPrimes, small...)
+
+	var wg sync.WaitGroup
+	ch := make(chan struct{ lo, hi uint64 }, workers*2)
+
+	// Worker pool
+	for w := 0; w < workers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var buf []uint64
+			for seg := range ch {
+				buf = buf[:0]
+				for i := seg.lo; i < seg.hi; i++ {
+					if i < 2 {
+						continue
+					}
+					isPrime := true
+					for _, sp := range small {
+						if sp*sp > i {
+							break
+						}
+						if i%sp == 0 {
+							isPrime = false
+							break
+						}
+					}
+					if isPrime {
+						buf = append(buf, i)
+					}
+				}
+				mu.Lock()
+				allPrimes = append(allPrimes, buf...)
+				mu.Unlock()
+			}
+		}()
+	}
+
+	// Feed segments
+	for lo := sqrtLimit + 1; lo < limit; lo += segSize {
+		hi := lo + segSize
+		if hi > limit {
+			hi = limit
+		}
+		if lo%2 == 0 {
+			lo++
+		}
+		ch <- struct{ lo, hi uint64 }{lo, hi}
+	}
+	close(ch)
+	wg.Wait()
+
+	sort.Slice(allPrimes, func(i, j int) bool { return allPrimes[i] < allPrimes[j] })
+	return allPrimes
+}
+
+func simpleSieve(limit uint64) []uint64 {
+	if limit < 2 {
+		return nil
+	}
+	sieve := make([]bool, limit+1)
+	for i := uint64(2); i*i <= limit; i++ {
+		if !sieve[i] {
+			for j := i * i; j <= limit; j += i {
+				sieve[j] = true
+			}
+		}
+	}
+	var primes []uint64
+	for i := uint64(2); i <= limit; i++ {
+		if !sieve[i] {
+			primes = append(primes, i)
+		}
+	}
+	return primes
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3D Hilbert curve — multiple variants
+// ─────────────────────────────────────────────────────────────────────────────
+
+// build3DCurve returns a mapping: index_in_linear_order → curve_position.
+// The curve maps a 1D distance d ∈ [0, 8^order) to a 3D coordinate.
+// We return curve[d] = flattened_3D_index (z * dim^2 + y * dim + x).
+func build3DCurve(order uint32, variant int) []int {
+	dim := uint32(1 << order)
+	total := dim * dim * dim // 8^order
+
+	// The standard 3D Hilbert uses 3-bit state per recursion level.
+	// Variant controls rotation and reflection at each level.
+	curve := make([]int, int(total))
+
+	// Process in parallel chunks
+	workers := runtime.NumCPU()
+	if workers < 1 {
+		workers = 1
+	}
+	chunkSize := (int(total) + workers - 1) / workers
+	if chunkSize < 1 {
+		chunkSize = 1
+	}
+	var wg sync.WaitGroup
+	for start := 0; start < int(total); start += chunkSize {
+		end := start + chunkSize
+		if end > int(total) {
+			end = int(total)
+		}
+		wg.Add(1)
+		lo, hi := start, end
+		go func() {
+			for d := lo; d < hi; d++ {
+				x, y, z := d2xyz3D(order, uint64(d), variant)
+				curve[d] = int(z)*int(dim)*int(dim) + int(y)*int(dim) + int(x)
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	return curve
+}
+
+// octantOrders enumerates valid 3D Hilbert traversal orders of the 8 sub-cubes.
+// Each entry is a permutation of 0..7 defining the visit order of the 2×2×2
+// octants.  Different permutations produce different Hilbert curve shapes.
+// There are 6 known fundamental 3D Hilbert curve patterns (compared to 1 in 2D).
+var octantOrders = [6][8]uint32{
+	{0, 1, 3, 2, 6, 7, 5, 4}, // pattern A (standard)
+	{0, 2, 6, 4, 5, 7, 3, 1}, // pattern B
+	{0, 2, 3, 1, 5, 7, 6, 4}, // pattern C
+	{0, 4, 6, 2, 3, 7, 5, 1}, // pattern D
+	{0, 4, 5, 1, 3, 7, 6, 2}, // pattern E
+	{0, 1, 5, 4, 6, 7, 3, 2}, // pattern F
+}
+
+// cubeSymmetries enumerates all 48 symmetries of the cube (24 rotations × reflection).
+// Applied to standard Hilbert curve output coordinates to produce genuinely
+// distinct curves with different prime distribution patterns.
+var cubeSymmetries = func() [48]struct{ perm [3]int; sign [3]int } {
+	var syms [48]struct{ perm [3]int; sign [3]int }
+	// 6 axis permutations
+	perms := [6][3]int{
+		{0, 1, 2}, {0, 2, 1}, {1, 0, 2}, {1, 2, 0}, {2, 0, 1}, {2, 1, 0},
+	}
+	// 8 sign patterns (all 2^3, including reflections)
+	signs := [8][3]int{
+		{1, 1, 1}, {1, 1, -1}, {1, -1, 1}, {1, -1, -1},
+		{-1, 1, 1}, {-1, 1, -1}, {-1, -1, 1}, {-1, -1, -1},
+	}
+	idx := 0
+	for _, p := range perms {
+		for _, s := range signs {
+			syms[idx].perm = p
+			syms[idx].sign = s
+			idx++
+		}
+	}
+	return syms
+}()
+
+// d2xyz3D maps a distance d along a 3D Hilbert curve to (x, y, z).
+// Computes the standard curve then applies a cube symmetry from the variant.
+func d2xyz3D(order uint32, d uint64, variant int) (x, y, z uint32) {
+	// Standard 3D Hilbert curve (pattern A)
+	n := uint32(1 << order)
+	for s := uint32(1); s < n; s <<= 1 {
+		bx := uint32((d >> 0) & 1)
+		by := uint32((d >> 1) & 1)
+		bz := uint32((d >> 2) & 1)
+		d >>= 3
+
+		if by == 0 {
+			if bz == 0 {
+				if bx == 1 {
+					x = s - 1 - x
+					y = s - 1 - y
+					z = s - 1 - z
+				}
+				x, y = y, x
+			} else if bx == 0 {
+				x, z = z, x
+			} else {
+				y, z = z, y
+			}
+		}
+		x += s * bx
+		y += s * by
+		z += s * bz
+	}
+
+	// Apply cube symmetry transformation
+	sym := cubeSymmetries[variant%48]
+	dim := n
+
+	// Map (x,y,z) through permutation
+	coords := [3]uint32{x, y, z}
+	nx := coords[sym.perm[0]]
+	ny := coords[sym.perm[1]]
+	nz := coords[sym.perm[2]]
+
+	// Apply sign flips (negative → reflect across center)
+	if sym.sign[0] < 0 {
+		nx = dim - 1 - nx
+	}
+	if sym.sign[1] < 0 {
+		ny = dim - 1 - ny
+	}
+	if sym.sign[2] < 0 {
+		nz = dim - 1 - nz
+	}
+
+	return nx, ny, nz
+}
+
+// rotation24 enumerates all 24 proper rotation matrices of the cube
+// (the chiral octahedral group). Each is a 3×3 matrix with entries in
+// {0, 1, -1}, exactly one non-zero per row/column, determinant +1.
+var rotation24 = func() [24][3][3]int {
+	// The 6 axis permutations (column assignments)
+	perms := [6][3]int{
+		{0, 1, 2}, // x→x, y→y, z→z
+		{0, 2, 1}, // x→x, y→z, z→y
+		{1, 0, 2}, // x→y, y→x, z→z
+		{1, 2, 0}, // x→y, y→z, z→x
+		{2, 0, 1}, // x→z, y→x, z→y
+		{2, 1, 0}, // x→z, y→y, z→x
+	}
+	// 4 sign patterns with determinant +1 (even number of sign flips)
+	signs := [4][3]int{
+		{1, 1, 1},   // all positive
+		{1, -1, -1}, // y,z flipped (det = +1)
+		{-1, 1, -1}, // x,z flipped (det = +1)
+		{-1, -1, 1}, // x,y flipped (det = +1)
+	}
+	var mats [24][3][3]int
+	idx := 0
+	for _, p := range perms {
+		for _, s := range signs {
+			for axis := 0; axis < 3; axis++ {
+				mats[idx][axis][p[axis]] = s[axis]
+			}
+			idx++
+		}
+	}
+	return mats
+}()
+
+// variantRotation returns the 3D rotation matrix for the given variant index.
+// The variant determines how axes map and which signs flip, producing distinct
+// Hilbert curve shapes.  There are exactly 24 proper rotations.
+func variantRotation(variant int) [3][3]int {
+	return rotation24[variant%24]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alignment testing
+// ─────────────────────────────────────────────────────────────────────────────
+
+// testAlignment measures locality of primes along the Hilbert curve.
+// Computes the mean curve-distance between consecutive primes mapped onto
+// the curve, normalized against the expected distance for a random set.
+// Low score = primes are closer together along the curve = alignment.
+func testAlignment(hits []int, order uint32) float64 {
+	// Collect curve positions of all primes (indices where hits > 0)
+	var positions []int
+	for i, h := range hits {
+		if h > 0 {
+			positions = append(positions, i)
+		}
+	}
+	if len(positions) < 2 {
+		return 1.0
+	}
+
+	// Sort positions by curve order
+	sort.Ints(positions)
+
+	// Compute mean gap between consecutive primes along the curve
+	totalGap := 0
+	for i := 1; i < len(positions); i++ {
+		totalGap += positions[i] - positions[i-1]
+	}
+	meanGap := float64(totalGap) / float64(len(positions)-1)
+
+	// Expected gap if primes were randomly distributed:
+	// total cells / number of primes
+	expectedGap := float64(len(hits)) / float64(len(positions))
+
+	// Alignment score: how much smaller are actual gaps vs expected?
+	// Score < 1 means primes are closer than random → alignment
+	return meanGap / expectedGap
+}
+
+// classifyAlignment interprets the alignment score.
+func classifyAlignment(score float64, order uint32) string {
+	switch {
+	case score < 0.7:
+		return "strongly aligned — primes cluster along curve!"
+	case score < 0.85:
+		return "aligned — primes closer than random"
+	case score < 0.95:
+		return "weakly aligned"
+	case score < 1.05:
+		return "random (no alignment)"
+	case score < 1.3:
+		return "slightly dispersed"
+	default:
+		return "dispersed — primes avoid each other"
+	}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Curve variant description
+// ─────────────────────────────────────────────────────────────────────────────
+
+func describeVariant(variant int) string {
+	// The 24 cube rotations of the octahedral group
+	names := []string{
+		"identity (xyz+)",
+		"identity (xyz with one sign flip)",
+		"identity (xyz with two sign flips)",
+		"identity (xyz with three sign flips)",
+		"swap xy (yxz+)",
+		"swap xy (yxz sign variant 1)",
+		"swap xy (yxz sign variant 2)",
+		"swap xy (yxz sign variant 3)",
+		"swap xz (zyx+)",
+		"swap xz (zyx sign variant 1)",
+		"swap yz (xzy+)",
+		"swap yz (xzy sign variant 1)",
+		"rotate xy→yz→zx (yzx+)",
+		"rotate xy→yz→zx variant 1",
+		"rotate zx→xy→yz (zxy+)",
+		"rotate zx→xy→yz variant 1",
+		"rotate xy→-xz (perm 5+)",
+		"rotate variant 17",
+		"rotate variant 18",
+		"rotate variant 19",
+		"rotate variant 20",
+		"rotate variant 21",
+		"rotate variant 22",
+		"rotate variant 23",
+	}
+	if variant < len(names) {
+		return names[variant]
+	}
+	return fmt.Sprintf("variant-%d", variant)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Curve estimation
+// ─────────────────────────────────────────────────────────────────────────────
+
+func estimateCurves(order int) {
+	fmt.Printf("\n── 3D Hilbert Curve Estimation ──\n")
+
+	// Number of 3D Hilbert curves of order n:
+	// At each recursion level, we have 8 sub-cubes arranged in a 2×2×2 grid.
+	// A 3D Hilbert curve is a Hamiltonian path through these 8 sub-cubes
+	// that satisfies the Hilbert continuity property.
+	//
+	// Base: the number of valid traversals of the 2×2×2 cube is the number
+	// of Hamiltonian paths that respect the Hilbert adjacency constraints.
+	// For a 3D cube, there are exactly 6 distinct "patterns" a 3D Hilbert
+	// curve can follow (compared to 1 pattern in 2D).
+	//
+	// Recursive: each sub-cube of size s becomes a cube of size s/2 with
+	// its own internal Hilbert curve, rotated to connect properly.
+	// Each sub-cube can use any of the 24 orientation-preserving rotations.
+	//
+	// Total estimate: 6 (base patterns) × 24^(order-1) (rotations per level)
+	// But many rotations produce identical curves due to symmetry.
+	// A tighter bound: the automorphism group of the 3D Hilbert curve
+	// has size approximately 24 × 8 = 192.
+	//
+	// So distinct curves ≈ 6 × 24^(order-1) / symmetry_factor
+
+	n := order
+	basePatterns := big.NewInt(6)
+	rotations := big.NewInt(24)
+	power := new(big.Int).Exp(rotations, big.NewInt(int64(n-1)), nil)
+	total := new(big.Int).Mul(basePatterns, power)
+
+	// Symmetry factor: each curve has ~192 automorphisms
+	symmetry := big.NewInt(192)
+	distinct := new(big.Int).Div(total, symmetry)
+
+	fmt.Printf("order %d (grid: %d×%d×%d):\n", n, 1<<n, 1<<n, 1<<n)
+	fmt.Printf("  base patterns (2×2×2 traversals):  6\n")
+	fmt.Printf("  rotations per recursion level:      24\n")
+	fmt.Printf("  recursion levels:                    %d\n", n-1)
+	fmt.Printf("  total combinatorial variants:        ~%s\n", formatBig(total))
+	fmt.Printf("  estimated distinct curves (mod symmetry): ~%s\n", formatBig(distinct))
+
+	// For context
+	if n <= 6 {
+		approx := new(big.Int).Div(distinct, big.NewInt(1))
+		fmt.Printf("  (visually: %s possible 3D Hilbert curves at order %d)\n",
+			formatBig(approx), n)
+	}
+}
+
+func formatBig(x *big.Int) string {
+	s := x.String()
+	if len(s) <= 12 {
+		return s
+	}
+	return fmt.Sprintf("%se%d", s[:6], len(s)-1)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+func pow64(base uint64, exp int) uint64 {
+	r := uint64(1)
+	for i := 0; i < exp; i++ {
+		r *= base
+	}
+	return r
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3D rotating cube movie
+// ─────────────────────────────────────────────────────────────────────────────
+
+func renderMovie(primes []uint64, order uint32, variant int, outPath string, numFrames int) {
+	fmt.Printf("\n── Rendering rotating cube movie (%d frames) …\n", numFrames)
+
+	// Build the 3D hits grid
+	curve := build3DCurve(order, variant)
+	dim := int(1 << order)
+	hits := make([]uint8, dim*dim*dim)
+	for _, p := range primes {
+		if int(p) < len(curve) {
+			hits[curve[p]] = 1
+		}
+	}
+
+	// Temp dir for frames
+	tmpDir, err := os.MkdirTemp("", "hprime-movie-*")
+	if err != nil {
+		fmt.Printf("temp dir error: %v\n", err)
+		return
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Render frames
+	outSize := 512
+	var pngFiles []string
+	for frame := 0; frame < numFrames; frame++ {
+		angleY := float64(frame) * 2.0 * math.Pi / float64(numFrames)
+		angleX := math.Pi / 6.0 // slight tilt
+		img := renderCubeView(hits, dim, angleX, angleY, outSize)
+
+		fn := filepath.Join(tmpDir, fmt.Sprintf("frame_%04d.png", frame))
+		f, _ := os.Create(fn)
+		png.Encode(f, img)
+		f.Close()
+		pngFiles = append(pngFiles, fn)
+
+		if frame%(numFrames/10) == 0 {
+			fmt.Printf("  frame %d/%d\n", frame, numFrames)
+		}
+	}
+
+	// Compose with ffmpeg
+	concatFile := filepath.Join(tmpDir, "concat.txt")
+	var lines []string
+	for _, p := range pngFiles {
+		lines = append(lines, fmt.Sprintf("file '%s'", p))
+	}
+	os.WriteFile(concatFile, []byte(joinLines(lines)), 0644)
+
+	cmd := exec.Command("ffmpeg",
+		"-y", "-f", "concat", "-safe", "0", "-r", "30",
+		"-i", concatFile,
+		"-vf", fmt.Sprintf("scale=%d:%d", outSize, outSize),
+		"-pix_fmt", "yuv420p",
+		outPath,
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("ffmpeg error: %v\n", err)
+		return
+	}
+	fmt.Printf("movie: %s  (%d frames)\n", outPath, numFrames)
+}
+
+func joinLines(lines []string) string {
+	s := ""
+	for _, l := range lines {
+		s += l + "\n"
+	}
+	return s
+}
+
+// renderCubeView renders the 3D cube from a given viewpoint using orthographic
+// projection with a simple rotation around Y then X axis.
+func renderCubeView(hits []uint8, dim int, angleX, angleY float64, outSize int) *image.Gray {
+	img := image.NewGray(image.Rect(0, 0, outSize, outSize))
+	// Black background
+	for y := 0; y < outSize; y++ {
+		for x := 0; x < outSize; x++ {
+			img.SetGray(x, y, color.Gray{Y: 0})
+		}
+	}
+
+	// Precompute rotation
+	cosY, sinY := math.Cos(angleY), math.Sin(angleY)
+	cosX, sinX := math.Cos(angleX), math.Sin(angleX)
+
+	half := float64(dim) / 2.0
+	scale := float64(outSize) / (float64(dim) * 1.8)
+
+	// Render back-to-front (painter's algorithm approximation)
+	for z := 0; z < dim; z++ {
+		for y := 0; y < dim; y++ {
+			for x := 0; x < dim; x++ {
+				idx := z*dim*dim + y*dim + x
+				if hits[idx] == 0 {
+					continue
+				}
+
+				// Center coordinates
+				cx := float64(x) - half
+				cy := float64(y) - half
+				cz := float64(z) - half
+
+				// Rotate around Y axis
+				rx := cx*cosY + cz*sinY
+				rz := -cx*sinY + cz*cosY
+				ry := cy
+
+				// Rotate around X axis
+				ry2 := ry*cosX - rz*sinX
+				rz2 := ry*sinX + rz*cosX
+
+				// Project to 2D (orthographic: drop Z after depth sort)
+				px := int(rx*scale + float64(outSize)/2)
+				py := int(ry2*scale + float64(outSize)/2)
+
+				if px >= 0 && px < outSize && py >= 0 && py < outSize {
+					// Brightness based on depth (z-order for visual cue)
+					depth := (rz2 + half) / float64(dim) // 0..1
+					bright := uint8(128 + depth*127)
+					img.SetGray(px, py, color.Gray{Y: bright})
+				}
+			}
+		}
+	}
+	return img
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Plane-alignment analysis
+// ─────────────────────────────────────────────────────────────────────────────
+
+func analyzePlanes(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	fmt.Printf("\n── Plane-Alignment Analysis (order %d, %d×%d×%d, variant %d) ──\n",
+		order, dim, dim, dim, variant)
+
+	// Build curve and map primes to 3D coordinates
+	curve := build3DCurve(order, variant)
+
+	// Store (prime_value, x, y, z) for each prime
+	type point struct {
+		val   uint64
+		x, y, z int
+	}
+	var points []point
+	for _, p := range primes {
+		if int(p) < len(curve) {
+			pos := curve[p]
+			z := pos / (dim * dim)
+			y := (pos / dim) % dim
+			x := pos % dim
+			points = append(points, point{p, x, y, z})
+		}
+	}
+
+	// Per-plane counts for X, Y, Z
+	xPlanes := make([]int, dim)
+	yPlanes := make([]int, dim)
+	zPlanes := make([]int, dim)
+
+	// Per-plane residue-class counts (mod 8)
+	type resCounts [8]int
+	xRes := make([]resCounts, dim)
+	yRes := make([]resCounts, dim)
+	zRes := make([]resCounts, dim)
+
+	for _, pt := range points {
+		xPlanes[pt.x]++
+		yPlanes[pt.y]++
+		zPlanes[pt.z]++
+		r := pt.val % 8
+		xRes[pt.x][r]++
+		yRes[pt.y][r]++
+		zRes[pt.z][r]++
+	}
+
+	expected := float64(len(points)) / float64(dim)
+
+	// Find planes with significant deviation
+	fmt.Printf("\n  Expected primes per plane: %.1f\n\n", expected)
+
+	// Helper: print significant planes
+	printSignificant := func(axis string, counts []int, residues []resCounts) {
+		bestZ := 0.0
+		bestPlane := -1
+		for i := 0; i < dim; i++ {
+			diff := float64(counts[i]) - expected
+			zScore := diff / math.Sqrt(expected)
+			if math.Abs(zScore) > math.Abs(bestZ) {
+				bestZ = zScore
+				bestPlane = i
+			}
+			// Print planes with |z-score| > 2.5
+			if math.Abs(zScore) > 2.5 {
+				fmt.Printf("  %s=%3d  count=%4d  z=%.2f  residues: ", axis, i, counts[i], zScore)
+				for r := 0; r < 8; r++ {
+					if residues[i][r] > 0 {
+						fmt.Printf("mod%d=%d ", r, residues[i][r])
+					}
+				}
+				fmt.Println()
+			}
+		}
+		if bestPlane >= 0 {
+			fmt.Printf("  strongest %s-plane: %d (z=%.2f)\n\n", axis, bestPlane, bestZ)
+		}
+	}
+
+	fmt.Println("  Significant X-planes (|z| > 2.5):")
+	printSignificant("X", xPlanes, xRes)
+	fmt.Println("  Significant Y-planes (|z| > 2.5):")
+	printSignificant("Y", yPlanes, yRes)
+	fmt.Println("  Significant Z-planes (|z| > 2.5):")
+	printSignificant("Z", zPlanes, zRes)
+
+	// Residue class alignment summary
+	fmt.Println("  Residue class distribution (mod 8) across all points:")
+	var totalRes [8]int
+	for _, pt := range points {
+		totalRes[pt.val%8]++
+	}
+	for r := 0; r < 8; r++ {
+		pct := float64(totalRes[r]) / float64(len(points)) * 100
+		fmt.Printf("    mod %d = %d: %6d  (%5.1f%%)\n", r, r, totalRes[r], pct)
+	}
+}
+
+// compareAllVariants runs plane analysis on all 48 cube symmetries and
+// reports the best variant for plane-alignment.
+func compareAllVariants(primes []uint64, order uint32) {
+	fmt.Printf("\n── Comparing all 48 cube symmetry variants ──\n")
+	fmt.Printf("  searching for strongest plane-alignment signal...\n\n")
+
+	type result struct {
+		variant   int
+		maxZScore float64
+		plane     string
+		count     int
+	}
+	var results []result
+
+	for v := 0; v < 48; v++ {
+		dim := int(1 << order)
+		curve := build3DCurve(order, v)
+
+		type pt struct{ x, y, z int }
+		var pts []pt
+		// Only sample first 4096 primes to keep it fast
+		for _, p := range primes {
+			if int(p) < len(curve) {
+				pos := curve[p]
+				pts = append(pts, pt{pos % dim, (pos / dim) % dim, pos / (dim * dim)})
+			}
+		}
+
+		zPlanes := make([]int, dim)
+		for _, p := range pts {
+			zPlanes[p.z]++
+		}
+		expected := float64(len(pts)) / float64(dim)
+		maxZ := 0.0
+		bestPlane := 0
+		bestCount := 0
+		for i := 0; i < dim; i++ {
+			z := (float64(zPlanes[i]) - expected) / math.Sqrt(expected)
+			if math.Abs(z) > math.Abs(maxZ) {
+				maxZ = z
+				bestPlane = i
+				bestCount = zPlanes[i]
+			}
+		}
+		results = append(results, result{v, maxZ, fmt.Sprintf("Z=%d", bestPlane), bestCount})
+	}
+
+	// Sort by absolute z-score
+	sort.Slice(results, func(i, j int) bool {
+		return math.Abs(results[i].maxZScore) > math.Abs(results[j].maxZScore)
+	})
+
+	fmt.Println("  Top 10 variants by strongest plane signal:")
+	fmt.Printf("  %-4s %-8s %-30s %6s  %s\n", "Rank", "Variant", "Description", "Z-max", "Plane (count)")
+	fmt.Println("  " + strings.Repeat("-", 75))
+	for i := 0; i < 10 && i < len(results); i++ {
+		r := results[i]
+		desc := describeVariant(r.variant)
+		if len(desc) > 28 {
+			desc = desc[:28]
+		}
+		fmt.Printf("  %-4d %-8d %-30s %+6.2f  %s (%d)\n",
+			i+1, r.variant, desc, r.maxZScore, r.plane, r.count)
+	}
+
+	best := results[0]
+	fmt.Printf("\n── Best variant: %d (%s) ──\n", best.variant, describeVariant(best.variant))
+	fmt.Printf("  strongest plane signal: z=%.2f\n", best.maxZScore)
+	fmt.Printf("\n── Utility postulation ──\n")
+	fmt.Printf(`
+  If primes consistently accumulate on specific planes of certain 3D Hilbert
+  curve variants, this has several potential applications:
+
+  1. COMPRESSION: A curve variant that clusters primes onto fewer planes reduces
+     the effective dimensionality — the prime set can be stored as "plane numbers
+     plus offsets" rather than full 3D coordinates. At z=%.1f, the best plane
+     holds %.0f/%d = %.1f%% of primes vs %.1f%% expected.
+
+  2. HASHING / INDEXING: A curve that concentrates primes spatially means
+     prime-based hash functions would have non-uniform bucket distribution.
+     This is useful for designing hash tables where certain buckets are
+     intentionally "hot" for cache optimization.
+
+  3. NUMBER THEORY INSIGHT: The residue class clustering on specific planes
+     reveals hidden structure in how the Hilbert curve interacts with
+     modular arithmetic. The curve's 3-bit encoding (octants) creates a
+     natural modulo-8 lattice — primes avoid certain lattice sites entirely
+     (even residues) and cluster on others.
+
+  4. CRYPTOGRAPHIC RELEVANCE: If a specific Hilbert curve variant produces
+     statistically significant prime clustering (|z| > 4), this constitutes
+     a non-random structural property that could serve as a distinguisher
+     in pseudorandom number generator testing.
+
+  5. DATA VISUALIZATION: For prime-oriented datasets, choosing a Hilbert curve
+     that maximizes spatial clustering makes heatmaps more informative —
+     structures invisible in random layouts become apparent.
+
+  The effect is modest at order 5 (max |z| ~ %.1f) but may amplify at
+  higher orders where the recursive structure compounds the bias.
+`, math.Abs(best.maxZScore), float64(best.count), int(1<<order),
+		float64(best.count)/float64(len(primes))*100,
+		100.0/float64(int(1<<order)),
+		math.Abs(best.maxZScore))
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Zeta correlation test
+// ─────────────────────────────────────────────────────────────────────────────
+
+func runCorrelationTest(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	total := dim * dim * dim
+	fmt.Printf("\n── Zeta Correlation Test (order %d, variant %d) ──\n", order, variant)
+
+	// Build prime set for O(1) lookup
+	primeSet := make(map[uint64]bool, len(primes))
+	for _, p := range primes {
+		primeSet[p] = true
+	}
+
+	// Build Hilbert curve
+	curve := build3DCurve(order, variant)
+
+	// For each Z-plane, collect statistics
+	type planeStats struct {
+		z          int
+		count      int      // primes on this plane
+		totalInts  int      // total integers mapping to this plane
+		samples    []uint64 // sampled integers for error computation
+	}
+	planes := make([]planeStats, dim)
+	for z := 0; z < dim; z++ {
+		planes[z].z = z
+	}
+
+	// Sample up to 1000 integers per plane for error estimation
+	sampleSize := 1000
+	for k := uint64(0); k < uint64(total); k++ {
+		z := curve[k] / (dim * dim)
+		planes[z].totalInts++
+		if primeSet[k] {
+			planes[z].count++
+		}
+		// Reservoir sample: take first sampleSize, then randomly replace
+		if len(planes[z].samples) < sampleSize {
+			planes[z].samples = append(planes[z].samples, k)
+		}
+	}
+
+	// Compute vectors for correlation
+	N := dim
+	density := make([]float64, N) // excess prime density per plane
+	errorPNT := make([]float64, N) // mean normalized PNT error
+
+	for z := 0; z < dim; z++ {
+		if planes[z].totalInts == 0 {
+			continue
+		}
+		// Excess density (same as earlier plane analysis)
+		expected := float64(len(primes)) / float64(dim)
+		density[z] = (float64(planes[z].count) - expected) / math.Sqrt(expected)
+
+		// Mean PNT error over sampled integers
+		var sumErr float64
+		for _, k := range planes[z].samples {
+			// Compute li(k) approximation: li(x) ≈ x/ln(x) * (1 + 1/ln(x) + 2/ln²(x))
+			if k < 2 {
+				continue
+			}
+			x := float64(k)
+			lnX := math.Log(x)
+			liX := x / lnX * (1 + 1/lnX + 2/(lnX*lnX))
+			piX := float64(countPrimesLE(primes, k))
+			// Normalized error
+			sumErr += (piX - liX) / math.Sqrt(x)
+		}
+		if len(planes[z].samples) > 0 {
+			errorPNT[z] = sumErr / float64(len(planes[z].samples))
+		}
+	}
+
+	// Pearson correlation
+	r := pearson(density, errorPNT)
+	fmt.Printf("\n  Pearson r(plane_density, PNT_error) = %.6f\n", r)
+
+	// Permutation test (1000 shuffles)
+	better := 0
+	trials := 1000
+	perm := make([]float64, N)
+	copy(perm, density)
+	for t := 0; t < trials; t++ {
+		// Shuffle density vector
+		for i := range perm {
+			j := i + int(uint64(i*2654435761)%uint64(N-i))
+			perm[i], perm[j] = perm[j], perm[i]
+		}
+		rp := pearson(perm, errorPNT)
+		if math.Abs(rp) >= math.Abs(r) {
+			better++
+		}
+	}
+	pValue := float64(better) / float64(trials)
+	fmt.Printf("  Permutation test p = %.4f  (trials=%d, %d >= |r|)\n", pValue, trials, better)
+
+	// Interpretation
+	switch {
+	case pValue < 0.01:
+		fmt.Println("  *** SIGNIFICANT: p < 0.01 — correlation unlikely by chance ***")
+	case pValue < 0.05:
+		fmt.Println("  ** NOTABLE: p < 0.05 — weak evidence of correlation")
+	case pValue < 0.10:
+		fmt.Println("  * SUGGESTIVE: p < 0.10 — possible trend, needs higher order")
+	default:
+		fmt.Println("  No significant correlation detected at this order")
+	}
+
+	// Top/bottom 5 planes by PNT error
+	fmt.Println("\n  Top 5 planes by positive PNT error (π(x) > li(x)):")
+	type zErr struct{ z int; d, e float64 }
+	var ranked []zErr
+	for z := 0; z < dim; z++ {
+		ranked = append(ranked, zErr{z, density[z], errorPNT[z]})
+	}
+	sort.Slice(ranked, func(i, j int) bool { return ranked[i].e > ranked[j].e })
+	for i := 0; i < 5 && i < len(ranked); i++ {
+		fmt.Printf("    Z=%3d  density_z=%.2f  pnt_err=%.4f\n",
+			ranked[i].z, ranked[i].d, ranked[i].e)
+	}
+	fmt.Println("  Bottom 5 planes by PNT error (π(x) < li(x)):")
+	for i := len(ranked) - 1; i >= len(ranked)-5 && i >= 0; i-- {
+		fmt.Printf("    Z=%3d  density_z=%.2f  pnt_err=%.4f\n",
+			ranked[i].z, ranked[i].d, ranked[i].e)
+	}
+
+	// Check: do hot planes (high prime density) also have positive PNT error?
+	hotZ := []int{}
+	for z := 0; z < dim; z++ {
+		if math.Abs(density[z]) > 2.5 {
+			hotZ = append(hotZ, z)
+		}
+	}
+	if len(hotZ) > 0 {
+		posErr := 0
+		for _, z := range hotZ {
+			if errorPNT[z] > 0 {
+				posErr++
+			}
+		}
+		fmt.Printf("\n  Hot planes (|z|>2.5): %d total, %d with positive PNT error (%.0f%%)\n",
+			len(hotZ), posErr, float64(posErr)/float64(len(hotZ))*100)
+		fmt.Println("  (If zeta correlation exists, hot planes should show positive PNT error)")
+	}
+}
+
+func pearson(x, y []float64) float64 {
+	if len(x) != len(y) || len(x) == 0 {
+		return 0
+	}
+	n := float64(len(x))
+	var sx, sy, sxy, sx2, sy2 float64
+	for i := range x {
+		sx += x[i]
+		sy += y[i]
+		sxy += x[i] * y[i]
+		sx2 += x[i] * x[i]
+		sy2 += y[i] * y[i]
+	}
+	num := n*sxy - sx*sy
+	den := math.Sqrt((n*sx2 - sx*sx) * (n*sy2 - sy*sy))
+	if den == 0 {
+		return 0
+	}
+	return num / den
+}
+
+func countPrimesLE(primes []uint64, x uint64) int {
+	lo, hi := 0, len(primes)
+	for lo < hi {
+		mid := (lo + hi) / 2
+		if primes[mid] <= x {
+			lo = mid + 1
+		} else {
+			hi = mid
+		}
+	}
+	return lo
+}
