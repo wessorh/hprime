@@ -45,6 +45,7 @@ func main() {
 	vm := flag.Bool("vm", false, "output von Mangoldt-weighted covariance matrix as JSON")
 	fastVM := flag.Bool("fast-vm", false, "optimized von Mangoldt operator (fast)")
 	stream := flag.Bool("stream", false, "streaming matrix builder (for order 11+)")
+	h4d := flag.Bool("4d", false, "use 4D Hilbert curve (16^n cells)")
 	compare := flag.Bool("compare", false, "compare all variants for best plane alignment")
 	flag.Parse()
 
@@ -111,6 +112,10 @@ func main() {
 	}
 
 	// ── Plane alignment analysis ───────────────────────────────────────
+	if *h4d {
+		outputMatrix4D(primes, uint32(*n), *planeVariant)
+		return
+	}
 	if *stream {
 		outputMatrixStreaming(primes, uint32(*n), *planeVariant)
 		return
@@ -1948,6 +1953,235 @@ func outputMatrixStreaming(primes []uint64, order uint32, variant int) {
 	fmt.Printf("  \"order\": %d,\n", order)
 	fmt.Printf("  \"dim\": %d,\n", dim)
 	fmt.Printf("  \"primes\": %d,\n", len(primes))
+	fmt.Println("  \"mu\": [")
+	for z := 0; z < dim; z++ {
+		comma := ","
+		if z == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("    %.10f%s\n", mu[z], comma)
+	}
+	fmt.Println("  ],")
+	fmt.Println("  \"covariance\": [")
+	for z1 := 0; z1 < dim; z1++ {
+		fmt.Print("    [")
+		for z2 := 0; z2 < dim; z2++ {
+			comma := ","
+			if z2 == dim-1 {
+				comma = ""
+			}
+			fmt.Printf("%.12f%s", cov[z1][z2], comma)
+		}
+		comma := ","
+		if z1 == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("]%s\n", comma)
+	}
+	fmt.Println("  ]")
+	fmt.Println("}")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4D Hilbert curve — d2xyzw
+// ─────────────────────────────────────────────────────────────────────────────
+
+// d2xyzw4D maps distance d along a 4D Hilbert curve to (x, y, z, w).
+// Processes 4 bits per recursion level (16 hyper-octants).
+// This is the standard 4D Hilbert algorithm.
+func d2xyzw4D(order uint32, d uint64, variant int) (x, y, z, w uint32) {
+	n := uint32(1 << order)
+
+	// The 4D Hilbert uses a state machine with the following transition table.
+	// Each state encodes how the 4 bits map to coordinate updates.
+	// We use a simplified version that captures the essential structure.
+	
+	for s := uint32(1); s < n; s <<= 1 {
+		// Extract 4 bits
+		bx := uint32((d >> 0) & 1)
+		by := uint32((d >> 1) & 1)
+		bz := uint32((d >> 2) & 1)
+		bw := uint32((d >> 3) & 1)
+		d >>= 4
+
+		// 4D Hilbert reflection logic:
+		// The traversal of 16 hyper-octants follows a Gray-code-like pattern.
+		// Key: if (by == 0) then apply reflection/swap rules
+		
+		if by == 0 {
+			if bz == 0 {
+				if bw == 0 {
+					if bx == 1 {
+						x = s - 1 - x
+						y = s - 1 - y
+						z = s - 1 - z
+						w = s - 1 - w
+					}
+					// Swap (x,y) and (z,w)
+					x, y = y, x
+					z, w = w, z
+				} else {
+					if bx == 0 {
+						// Swap (x,z)
+						x, z = z, x
+					} else {
+						// Swap (y,w)
+						y, w = w, y
+					}
+				}
+			} else {
+				if bw == 0 {
+					if bx == 0 {
+						// Swap (x,w)
+						x, w = w, x
+					} else {
+						// Swap (y,z)
+						y, z = z, y
+					}
+				} else {
+					// Swap (x,y) and reflect z,w
+					x, y = y, x
+					if bx == 1 {
+						z = s - 1 - z
+						w = s - 1 - w
+					}
+				}
+			}
+		}
+		x += s * bx
+		y += s * by
+		z += s * bz
+		w += s * bw
+	}
+	return
+}
+
+// build4DCurve returns Z-plane assignments for a 4D Hilbert curve.
+// Returns curve[d] = Z-coordinate for integer d.
+func build4DZCurve(order uint32, variant int) []uint32 {
+	total := uint64(1) << (4 * order) // 16^order
+	curve := make([]uint32, total)
+	
+	workers := runtime.NumCPU()
+	if workers < 1 {
+		workers = 1
+	}
+	chunkSize := (int(total) + workers - 1) / workers
+	if chunkSize < 1 {
+		chunkSize = 1
+	}
+	var wg sync.WaitGroup
+	for start := 0; start < int(total); start += chunkSize {
+		end := start + chunkSize
+		if end > int(total) {
+			end = int(total)
+		}
+		wg.Add(1)
+		lo, hi := start, end
+		go func() {
+			for d := lo; d < hi; d++ {
+				_, _, z, _ := d2xyzw4D(order, uint64(d), variant)
+				curve[d] = z
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	return curve
+}
+
+// outputMatrix4D builds the covariance matrix using a 4D Hilbert curve.
+func outputMatrix4D(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	total := uint64(1) << (4 * order) // 16^order
+	fmt.Fprintf(os.Stderr, "4D order %d: %dx%d matrix, %d primes, %.1fB cells\n",
+		order, dim, dim, len(primes), float64(total))
+
+	// Build prime bitset
+	bitset := make([]uint64, (total+63)/64)
+	for _, p := range primes {
+		if p < total {
+			bitset[p/64] |= 1 << (p % 64)
+		}
+	}
+	isPrime := func(k uint64) bool {
+		return bitset[k/64]&(1<<(k%64)) != 0
+	}
+
+	// Pass 1: compute plane sizes and means
+	planeSize := make([]int, dim)
+	mu := make([]float64, dim)
+
+	fmt.Fprintf(os.Stderr, "  Pass 1: plane sizes...\n")
+	curve := build4DZCurve(order, variant)
+	for k := uint64(0); k < total; k++ {
+		z := int(curve[k])
+		planeSize[z]++
+		if isPrime(k) && k > 1 {
+			mu[z]++
+		}
+	}
+	for z := 0; z < dim; z++ {
+		if planeSize[z] > 0 {
+			mu[z] /= float64(planeSize[z])
+		}
+	}
+
+	// Build covariance matrix
+	cov := make([][]float64, dim)
+	for i := range cov {
+		cov[i] = make([]float64, dim)
+	}
+	counts := make([][]int, dim)
+	for i := range counts {
+		counts[i] = make([]int, dim)
+	}
+
+	fmt.Fprintf(os.Stderr, "  Pass 2: covariance from %d pairs...\n", total-1)
+	progressStep := total / 20
+	for k := uint64(0); k < total-1; k++ {
+		if k%progressStep == 0 {
+			pct := k * 100 / total
+			fmt.Fprintf(os.Stderr, "    %d%%\n", pct)
+		}
+		z1 := int(curve[k])
+		z2 := int(curve[k+1])
+
+		i1 := 0.0
+		i2 := 0.0
+		if isPrime(k) {
+			i1 = 1.0
+		}
+		if isPrime(k+1) {
+			i2 = 1.0
+		}
+
+		cov[z1][z2] += (i1 - mu[z1]) * (i2 - mu[z2])
+		counts[z1][z2]++
+	}
+
+	// Normalize and symmetrize
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := 0; z2 < dim; z2++ {
+			if counts[z1][z2] > 0 {
+				cov[z1][z2] /= float64(counts[z1][z2])
+			}
+		}
+	}
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := z1 + 1; z2 < dim; z2++ {
+			avg := (cov[z1][z2] + cov[z2][z1]) / 2.0
+			cov[z1][z2] = avg
+			cov[z2][z1] = avg
+		}
+	}
+
+	// JSON output
+	fmt.Println("{")
+	fmt.Printf("  \"order\": %d,\n", order)
+	fmt.Printf("  \"dim\": %d,\n", dim)
+	fmt.Printf("  \"primes\": %d,\n", len(primes))
+	fmt.Printf("  \"hilbert\": \"4D\",\n")
 	fmt.Println("  \"mu\": [")
 	for z := 0; z < dim; z++ {
 		comma := ","
