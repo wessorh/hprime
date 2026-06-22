@@ -1,0 +1,80 @@
+=== hprime — primes on 3D Hilbert curves ===
+limit:       8^9 = 134217728
+variants:    8
+curve order: 9  (grid: 512×512×512 = 134217728 points)
+
+── 3D Hilbert Curve Estimation ──
+order 9 (grid: 512×512×512):
+  base patterns (2×2×2 traversals):  6
+  rotations per recursion level:      24
+  recursion levels:                    8
+  total combinatorial variants:        ~660451885056
+  estimated distinct curves (mod symmetry): ~3439853568
+
+── Computing primes < 134217728 …
+found 7603553 primes (5.6651% of range)
+
+── Variant 0: identity (xyz+)
+  occupied cells: 7603553 / 134217728 (5.67%)
+  max primes/cell: 1
+  avg primes/cell: 0.0567
+  alignment score: 1.0000  (random (no alignment))
+
+── Variant 1: identity (xyz with one sign flip)
+  occupied cells: 7603553 / 134217728 (5.67%)
+  max primes/cell: 1
+  avg primes/cell: 0.0567
+  alignment score: 1.0000  (random (no alignment))
+
+── Variant 2: identity (xyz with two sign flips)
+  occupied cells: 7603553 / 134217728 (5.67%)
+  max primes/cell: 1
+  avg primes/cell: 0.0567
+  alignment score: 1.0000  (random (no alignment))
+
+── Variant 3: identity (xyz with three sign flips)
+  occupied cells: 7603553 / 134217728 (5.67%)
+  max primes/cell: 1
+  avg primes/cell: 0.0567
+
+── Variant 4: swap xy (yxz+)
+  occupied cells: 7603553 / 134217728 (5.67%)
+  max primes/cell: 1
+  avg primes/cell: 0.0567
+
+── Variant 5: swap xy (yxz sign variant 1)
+  occupied cells: 7603553 / 134217728 (5.67%)
+  max primes/cell: 1
+  avg primes/cell: 0.0567
+
+── Variant 6: swap xy (yxz sign variant 2)
+  occupied cells: 7603553 / 134217728 (5.67%)
+  max primes/cell: 1
+  avg primes/cell: 0.0567
+
+── Variant 7: swap xy (yxz sign variant 3)
+  occupied cells: 7603553 / 134217728 (5.67%)
+  max primes/cell: 1
+  avg primes/cell: 0.0567
+
+── Zeta Correlation Test (order 9, variant 0) ──
+
+  Pearson r(plane_density, PNT_error) = -0.350337
+  Permutation test p = 0.0000  (trials=1000, 0 >= |r|)
+  *** SIGNIFICANT: p < 0.01 — correlation unlikely by chance ***
+
+  Top 5 planes by positive PNT error (π(x) > li(x)):
+    Z=385  density_z=-23.16  pnt_err=0.5671
+    Z=386  density_z=-7.33  pnt_err=0.5671
+    Z=384  density_z=12.39  pnt_err=0.5671
+    Z=399  density_z=13.93  pnt_err=0.5671
+    Z=387  density_z=-1.27  pnt_err=0.5671
+  Bottom 5 planes by PNT error (π(x) < li(x)):
+    Z=  0  density_z=31.31  pnt_err=-0.0694
+    Z=  1  density_z=-15.57  pnt_err=-0.0611
+    Z=  2  density_z=13.70  pnt_err=-0.0531
+    Z=  3  density_z=1.20  pnt_err=-0.0521
+    Z=  5  density_z=-10.39  pnt_err=-0.0481
+
+  Hot planes (|z|>2.5): 442 total, 422 with positive PNT error (95%)
+  (If zeta correlation exists, hot planes should show positive PNT error)

@@ -1,0 +1,687 @@
+=== hprime — primes on 3D Hilbert curves ===
+limit:       8^8 = 16777216
+variants:    8
+curve order: 8  (grid: 256×256×256 = 16777216 points)
+
+── 3D Hilbert Curve Estimation ──
+order 8 (grid: 256×256×256):
+  base patterns (2×2×2 traversals):  6
+  rotations per recursion level:      24
+  recursion levels:                    7
+  total combinatorial variants:        ~27518828544
+  estimated distinct curves (mod symmetry): ~143327232
+
+── Computing primes < 16777216 …
+found 1077871 primes (6.4246% of range)
+
+── Variant 0: identity (xyz+)
+  occupied cells: 1077871 / 16777216 (6.42%)
+  max primes/cell: 1
+  avg primes/cell: 0.0642
+  alignment score: 1.0000  (random (no alignment))
+
+── Variant 1: identity (xyz with one sign flip)
+  occupied cells: 1077871 / 16777216 (6.42%)
+  max primes/cell: 1
+  avg primes/cell: 0.0642
+  alignment score: 1.0000  (random (no alignment))
+
+── Variant 2: identity (xyz with two sign flips)
+  occupied cells: 1077871 / 16777216 (6.42%)
+  max primes/cell: 1
+  avg primes/cell: 0.0642
+  alignment score: 1.0000  (random (no alignment))
+
+── Variant 3: identity (xyz with three sign flips)
+  occupied cells: 1077871 / 16777216 (6.42%)
+  max primes/cell: 1
+  avg primes/cell: 0.0642
+
+── Variant 4: swap xy (yxz+)
+  occupied cells: 1077871 / 16777216 (6.42%)
+  max primes/cell: 1
+  avg primes/cell: 0.0642
+
+── Variant 5: swap xy (yxz sign variant 1)
+  occupied cells: 1077871 / 16777216 (6.42%)
+  max primes/cell: 1
+  avg primes/cell: 0.0642
+
+── Variant 6: swap xy (yxz sign variant 2)
+  occupied cells: 1077871 / 16777216 (6.42%)
+  max primes/cell: 1
+  avg primes/cell: 0.0642
+
+── Variant 7: swap xy (yxz sign variant 3)
+  occupied cells: 1077871 / 16777216 (6.42%)
+  max primes/cell: 1
+  avg primes/cell: 0.0642
+
+── Plane-Alignment Analysis (order 8, 256×256×256, variant 0) ──
+
+  Expected primes per plane: 4210.4
+
+  Significant X-planes (|z| > 2.5):
+  X=  0  count=5078  z=13.37  residues: mod1=1284 mod3=1511 mod5=1042 mod7=1241 
+  X=  1  count=3609  z=-9.27  residues: mod1=861 mod2=1 mod3=690 mod5=1135 mod7=922 
+  X=  3  count=4579  z=5.68  residues: mod1=1176 mod3=1197 mod5=992 mod7=1214 
+  X=  4  count=4591  z=5.86  residues: mod1=1192 mod3=1308 mod5=1025 mod7=1066 
+  X=  6  count=3854  z=-5.49  residues: mod1=1093 mod3=791 mod5=1130 mod7=840 
+  X=  7  count=4966  z=11.64  residues: mod1=1101 mod3=1448 mod5=1039 mod7=1378 
+  X=  8  count=4726  z=7.95  residues: mod1=1231 mod3=1419 mod5=981 mod7=1095 
+  X=  9  count=3978  z=-3.58  residues: mod1=924 mod3=762 mod5=1186 mod7=1106 
+  X= 10  count=3884  z=-5.03  residues: mod1=1025 mod3=849 mod5=1084 mod7=926 
+  X= 11  count=4848  z=9.83  residues: mod1=1169 mod3=1243 mod5=1094 mod7=1342 
+  X= 13  count=4455  z=3.77  residues: mod1=955 mod3=1017 mod5=1233 mod7=1250 
+  X= 14  count=3602  z=-9.38  residues: mod1=1078 mod3=600 mod5=1171 mod7=753 
+  X= 15  count=5206  z=15.34  residues: mod1=1130 mod3=1596 mod5=1027 mod7=1453 
+  X= 16  count=4745  z=8.24  residues: mod1=1241 mod3=1419 mod5=946 mod7=1139 
+  X= 17  count=3933  z=-4.28  residues: mod1=916 mod3=751 mod5=1186 mod7=1080 
+  X= 18  count=3947  z=-4.06  residues: mod1=1084 mod3=908 mod5=1060 mod7=895 
+  X= 19  count=4740  z=8.16  residues: mod1=1144 mod3=1281 mod5=1058 mod7=1257 
+  X= 21  count=4500  z=4.46  residues: mod1=1007 mod3=963 mod5=1245 mod7=1285 
+  X= 22  count=3492  z=-11.07  residues: mod1=955 mod3=672 mod5=1086 mod7=779 
+  X= 23  count=5132  z=14.20  residues: mod1=1178 mod3=1484 mod5=1067 mod7=1403 
+  X= 24  count=4448  z=3.66  residues: mod1=1270 mod3=1323 mod5=909 mod7=946 
+  X= 26  count=3685  z=-8.10  residues: mod1=1050 mod3=798 mod5=1016 mod7=821 
+  X= 27  count=5073  z=13.29  residues: mod1=1157 mod3=1402 mod5=1138 mod7=1376 
+  X= 28  count=3992  z=-3.37  residues: mod1=1150 mod3=1103 mod5=915 mod7=824 
+  X= 29  count=4504  z=4.52  residues: mod1=978 mod3=956 mod5=1274 mod7=1296 
+  X= 30  count=3513  z=-10.75  residues: mod1=1055 mod3=569 mod5=1216 mod7=673 
+  X= 31  count=5187  z=15.05  residues: mod1=1090 mod3=1687 mod5=927 mod7=1483 
+  X= 32  count=4763  z=8.52  residues: mod1=1214 mod3=1434 mod5=945 mod7=1170 
+  X= 33  count=3928  z=-4.35  residues: mod1=949 mod3=728 mod5=1233 mod7=1018 
+  X= 34  count=4036  z=-2.69  residues: mod1=1069 mod3=965 mod5=1080 mod7=922 
+  X= 35  count=4645  z=6.70  residues: mod1=1071 mod3=1268 mod5=1102 mod7=1204 
+  X= 38  count=3600  z=-9.41  residues: mod1=1016 mod3=733 mod5=1027 mod7=824 
+  X= 39  count=5085  z=13.48  residues: mod1=1178 mod3=1404 mod5=1065 mod7=1438 
+  X= 40  count=4485  z=4.23  residues: mod1=1264 mod3=1309 mod5=912 mod7=1000 
+  X= 42  count=3702  z=-7.84  residues: mod1=1069 mod3=828 mod5=980 mod7=825 
+  X= 43  count=4868  z=10.13  residues: mod1=1125 mod3=1255 mod5=1148 mod7=1340 
+  X= 45  count=4483  z=4.20  residues: mod1=953 mod3=976 mod5=1255 mod7=1299 
+  X= 46  count=3528  z=-10.52  residues: mod1=1009 mod3=587 mod5=1206 mod7=726 
+  X= 47  count=5190  z=15.10  residues: mod1=1185 mod3=1538 mod5=1009 mod7=1458 
+  X= 48  count=4655  z=6.85  residues: mod1=1259 mod3=1438 mod5=903 mod7=1055 
+  X= 49  count=4043  z=-2.58  residues: mod1=947 mod3=770 mod5=1239 mod7=1087 
+  X= 50  count=3863  z=-5.35  residues: mod1=1077 mod3=905 mod5=1013 mod7=868 
+  X= 51  count=4853  z=9.90  residues: mod1=1112 mod3=1255 mod5=1110 mod7=1376 
+  X= 53  count=4438  z=3.51  residues: mod1=962 mod3=946 mod5=1298 mod7=1232 
+  X= 54  count=3455  z=-11.64  residues: mod1=969 mod3=657 mod5=1067 mod7=762 
+  X= 55  count=5187  z=15.05  residues: mod1=1213 mod3=1471 mod5=1113 mod7=1390 
+  X= 56  count=4389  z=2.75  residues: mod1=1278 mod3=1295 mod5=838 mod7=978 
+  X= 58  count=3665  z=-8.41  residues: mod1=983 mod3=864 mod5=1019 mod7=799 
+  X= 59  count=5164  z=14.70  residues: mod1=1178 mod3=1352 mod5=1218 mod7=1416 
+  X= 61  count=4629  z=6.45  residues: mod1=971 mod3=1011 mod5=1294 mod7=1353 
+  X= 62  count=3490  z=-11.10  residues: mod1=1101 mod3=502 mod5=1255 mod7=632 
+  X= 63  count=5147  z=14.43  residues: mod1=1045 mod3=1659 mod5=913 mod7=1530 
+  X= 64  count=4667  z=7.04  residues: mod1=1163 mod3=1436 mod5=903 mod7=1165 
+  X= 65  count=3786  z=-6.54  residues: mod1=986 mod3=682 mod5=1194 mod7=924 
+  X= 66  count=3976  z=-3.61  residues: mod1=1059 mod3=909 mod5=1090 mod7=918 
+  X= 67  count=4553  z=5.28  residues: mod1=1084 mod3=1204 mod5=1014 mod7=1251 
+  X= 70  count=3530  z=-10.49  residues: mod1=972 mod3=718 mod5=1072 mod7=768 
+  X= 71  count=4818  z=9.36  residues: mod1=1128 mod3=1352 mod5=1029 mod7=1309 
+  X= 72  count=4499  z=4.45  residues: mod1=1266 mod3=1335 mod5=901 mod7=997 
+  X= 73  count=3981  z=-3.54  residues: mod1=866 mod3=796 mod5=1172 mod7=1147 
+  X= 74  count=3757  z=-6.99  residues: mod1=1051 mod3=853 mod5=1011 mod7=842 
+  X= 75  count=4806  z=9.18  residues: mod1=1113 mod3=1326 mod5=1087 mod7=1280 
+  X= 77  count=4475  z=4.08  residues: mod1=965 mod3=1002 mod5=1235 mod7=1273 
+  X= 78  count=3446  z=-11.78  residues: mod1=983 mod3=598 mod5=1163 mod7=702 
+  X= 79  count=4996  z=12.11  residues: mod1=1105 mod3=1487 mod5=990 mod7=1414 
+  X= 80  count=4472  z=4.03  residues: mod1=1225 mod3=1336 mod5=908 mod7=1003 
+  X= 81  count=4035  z=-2.70  residues: mod1=902 mod3=740 mod5=1312 mod7=1081 
+  X= 82  count=3628  z=-8.98  residues: mod1=1015 mod3=842 mod5=1004 mod7=767 
+  X= 83  count=4702  z=7.58  residues: mod1=1087 mod3=1255 mod5=1123 mod7=1237 
+  X= 84  count=4021  z=-2.92  residues: mod1=1181 mod3=1126 mod5=870 mod7=844 
+  X= 86  count=3504  z=-10.89  residues: mod1=976 mod3=696 mod5=1077 mod7=755 
+  X= 87  count=5045  z=12.86  residues: mod1=1171 mod3=1465 mod5=1050 mod7=1359 
+  X= 90  count=3574  z=-9.81  residues: mod1=984 mod3=809 mod5=981 mod7=800 
+  X= 91  count=4882  z=10.35  residues: mod1=1139 mod3=1357 mod5=1092 mod7=1294 
+  X= 92  count=4023  z=-2.89  residues: mod1=1151 mod3=1081 mod5=917 mod7=874 
+  X= 93  count=4614  z=6.22  residues: mod1=957 mod3=1048 mod5=1309 mod7=1300 
+  X= 94  count=3405  z=-12.41  residues: mod1=973 mod3=560 mod5=1130 mod7=742 
+  X= 95  count=5055  z=13.02  residues: mod1=1120 mod3=1544 mod5=955 mod7=1436 
+  X= 96  count=4544  z=5.14  residues: mod1=1182 mod3=1418 mod5=862 mod7=1082 
+  X= 97  count=3880  z=-5.09  residues: mod1=917 mod3=725 mod5=1207 mod7=1031 
+  X= 98  count=3843  z=-5.66  residues: mod1=1073 mod3=882 mod5=1018 mod7=870 
+  X= 99  count=4638  z=6.59  residues: mod1=1052 mod3=1225 mod5=1141 mod7=1220 
+  X=102  count=3498  z=-10.98  residues: mod1=948 mod3=731 mod5=1079 mod7=740 
+  X=103  count=4962  z=11.58  residues: mod1=1152 mod3=1456 mod5=1041 mod7=1313 
+  X=106  count=3666  z=-8.39  residues: mod1=1004 mod3=803 mod5=992 mod7=867 
+  X=107  count=4740  z=8.16  residues: mod1=1108 mod3=1274 mod5=1076 mod7=1282 
+  X=108  count=4020  z=-2.93  residues: mod1=1142 mod3=1116 mod5=886 mod7=876 
+  X=109  count=4377  z=2.57  residues: mod1=973 mod3=989 mod5=1234 mod7=1181 
+  X=110  count=3366  z=-13.01  residues: mod1=919 mod3=599 mod5=1098 mod7=750 
+  X=111  count=5088  z=13.52  residues: mod1=1166 mod3=1543 mod5=982 mod7=1397 
+  X=112  count=4544  z=5.14  residues: mod1=1257 mod3=1395 mod5=909 mod7=983 
+  X=113  count=3965  z=-3.78  residues: mod1=858 mod3=722 mod5=1275 mod7=1110 
+  X=114  count=3821  z=-6.00  residues: mod1=1052 mod3=897 mod5=1014 mod7=858 
+  X=115  count=4737  z=8.12  residues: mod1=1052 mod3=1251 mod5=1134 mod7=1300 
+  X=118  count=3450  z=-11.72  residues: mod1=957 mod3=660 mod5=1080 mod7=753 
+  X=119  count=5059  z=13.08  residues: mod1=1255 mod3=1476 mod5=997 mod7=1331 
+  X=122  count=3536  z=-10.39  residues: mod1=977 mod3=782 mod5=988 mod7=789 
+  X=123  count=4855  z=9.93  residues: mod1=1118 mod3=1358 mod5=1107 mod7=1272 
+  X=124  count=4014  z=-3.03  residues: mod1=1193 mod3=1109 mod5=872 mod7=840 
+  X=125  count=4575  z=5.62  residues: mod1=951 mod3=1047 mod5=1245 mod7=1332 
+  X=126  count=3455  z=-11.64  residues: mod1=1032 mod3=479 mod5=1273 mod7=671 
+  X=127  count=4972  z=11.74  residues: mod1=994 mod3=1678 mod5=811 mod7=1489 
+  X=128  count=4579  z=5.68  residues: mod1=996 mod3=1589 mod5=694 mod7=1300 
+  X=129  count=3677  z=-8.22  residues: mod1=1117 mod3=503 mod5=1352 mod7=705 
+  X=130  count=3973  z=-3.66  residues: mod1=941 mod3=945 mod5=1083 mod7=1004 
+  X=131  count=4389  z=2.75  residues: mod1=1148 mod3=1143 mod5=1052 mod7=1046 
+  X=133  count=4022  z=-2.90  residues: mod1=977 mod3=815 mod5=1153 mod7=1077 
+  X=134  count=3536  z=-10.39  residues: mod1=902 mod3=699 mod5=1047 mod7=888 
+  X=135  count=4776  z=8.72  residues: mod1=1149 mod3=1358 mod5=1025 mod7=1244 
+  X=136  count=4445  z=3.61  residues: mod1=1159 mod3=1323 mod5=909 mod7=1054 
+  X=137  count=3918  z=-4.51  residues: mod1=929 mod3=752 mod5=1189 mod7=1048 
+  X=138  count=3651  z=-8.62  residues: mod1=964 mod3=790 mod5=1030 mod7=867 
+  X=139  count=4564  z=5.45  residues: mod1=1081 mod3=1281 mod5=1015 mod7=1187 
+  X=140  count=4006  z=-3.15  residues: mod1=1061 mod3=1131 mod5=889 mod7=925 
+  X=142  count=3315  z=-13.80  residues: mod1=880 mod3=629 mod5=1061 mod7=745 
+  X=143  count=4957  z=11.51  residues: mod1=1183 mod3=1503 mod5=1007 mod7=1264 
+  X=144  count=4489  z=4.29  residues: mod1=1194 mod3=1305 mod5=952 mod7=1038 
+  X=145  count=3841  z=-5.69  residues: mod1=958 mod3=663 mod5=1214 mod7=1006 
+  X=146  count=3797  z=-6.37  residues: mod1=1027 mod3=894 mod5=972 mod7=904 
+  X=147  count=4431  z=3.40  residues: mod1=1036 mod3=1184 mod5=1012 mod7=1199 
+  X=150  count=3434  z=-11.97  residues: mod1=904 mod3=698 mod5=1038 mod7=794 
+  X=151  count=4762  z=8.50  residues: mod1=1132 mod3=1369 mod5=1059 mod7=1202 
+  X=153  count=3983  z=-3.51  residues: mod1=914 mod3=787 mod5=1184 mod7=1098 
+  X=154  count=3636  z=-8.85  residues: mod1=974 mod3=807 mod5=999 mod7=856 
+  X=155  count=4619  z=6.30  residues: mod1=1049 mod3=1285 mod5=1040 mod7=1245 
+  X=156  count=3894  z=-4.88  residues: mod1=1058 mod3=1078 mod5=860 mod7=898 
+  X=157  count=4380  z=2.61  residues: mod1=1016 mod3=966 mod5=1233 mod7=1165 
+  X=158  count=3328  z=-13.60  residues: mod1=961 mod3=552 mod5=1069 mod7=746 
+  X=159  count=4939  z=11.23  residues: mod1=1151 mod3=1488 mod5=964 mod7=1336 
+  X=160  count=4604  z=6.07  residues: mod1=1175 mod3=1467 mod5=838 mod7=1124 
+  X=161  count=3720  z=-7.56  residues: mod1=966 mod3=620 mod5=1207 mod7=927 
+  X=162  count=3789  z=-6.49  residues: mod1=1000 mod3=859 mod5=1051 mod7=879 
+  X=163  count=4417  z=3.18  residues: mod1=1045 mod3=1205 mod5=1038 mod7=1129 
+  X=166  count=3422  z=-12.15  residues: mod1=907 mod3=654 mod5=1072 mod7=789 
+  X=167  count=4706  z=7.64  residues: mod1=1140 mod3=1339 mod5=964 mod7=1263 
+  X=169  count=3998  z=-3.27  residues: mod1=881 mod3=787 mod5=1221 mod7=1109 
+  X=170  count=3515  z=-10.72  residues: mod1=936 mod3=773 mod5=1009 mod7=797 
+  X=171  count=4516  z=4.71  residues: mod1=1015 mod3=1224 mod5=1104 mod7=1173 
+  X=172  count=4011  z=-3.07  residues: mod1=1116 mod3=1132 mod5=871 mod7=892 
+  X=174  count=3372  z=-12.92  residues: mod1=899 mod3=591 mod5=1091 mod7=791 
+  X=175  count=4998  z=12.14  residues: mod1=1174 mod3=1495 mod5=1011 mod7=1318 
+  X=176  count=4416  z=3.17  residues: mod1=1147 mod3=1369 mod5=822 mod7=1078 
+  X=177  count=3922  z=-4.45  residues: mod1=920 mod3=723 mod5=1187 mod7=1092 
+  X=178  count=3678  z=-8.21  residues: mod1=976 mod3=857 mod5=969 mod7=876 
+  X=179  count=4471  z=4.02  residues: mod1=1031 mod3=1233 mod5=1035 mod7=1172 
+  X=180  count=4035  z=-2.70  residues: mod1=1110 mod3=1165 mod5=849 mod7=911 
+  X=182  count=3436  z=-11.93  residues: mod1=905 mod3=662 mod5=1064 mod7=805 
+  X=183  count=4916  z=10.87  residues: mod1=1167 mod3=1388 mod5=1042 mod7=1319 
+  X=186  count=3568  z=-9.90  residues: mod1=892 mod3=824 mod5=1023 mod7=829 
+  X=187  count=4682  z=7.27  residues: mod1=1134 mod3=1282 mod5=1085 mod7=1181 
+  X=188  count=3881  z=-5.08  residues: mod1=1075 mod3=1040 mod5=878 mod7=888 
+  X=190  count=3286  z=-14.25  residues: mod1=902 mod3=574 mod5=1062 mod7=748 
+  X=191  count=4906  z=10.72  residues: mod1=1079 mod3=1567 mod5=967 mod7=1293 
+  X=192  count=4522  z=4.80  residues: mod1=1009 mod3=1457 mod5=770 mod7=1286 
+  X=193  count=3849  z=-5.57  residues: mod1=1098 mod3=552 mod5=1377 mod7=822 
+  X=194  count=3871  z=-5.23  residues: mod1=921 mod3=932 mod5=1024 mod7=994 
+  X=195  count=4381  z=2.63  residues: mod1=1163 mod3=1114 mod5=1028 mod7=1076 
+  X=198  count=3521  z=-10.63  residues: mod1=895 mod3=730 mod5=1035 mod7=861 
+  X=199  count=4632  z=6.50  residues: mod1=1106 mod3=1345 mod5=1004 mod7=1177 
+  X=200  count=4417  z=3.18  residues: mod1=1141 mod3=1331 mod5=898 mod7=1047 
+  X=201  count=3967  z=-3.75  residues: mod1=950 mod3=743 mod5=1230 mod7=1044 
+  X=202  count=3593  z=-9.52  residues: mod1=956 mod3=800 mod5=963 mod7=874 
+  X=203  count=4543  z=5.13  residues: mod1=1096 mod3=1253 mod5=1010 mod7=1184 
+  X=206  count=3411  z=-12.32  residues: mod1=900 mod3=590 mod5=1101 mod7=820 
+  X=207  count=4864  z=10.07  residues: mod1=1216 mod3=1424 mod5=1001 mod7=1223 
+  X=209  count=3762  z=-6.91  residues: mod1=923 mod3=671 mod5=1185 mod7=983 
+  X=210  count=3882  z=-5.06  residues: mod1=1002 mod3=906 mod5=1058 mod7=916 
+  X=211  count=4571  z=5.56  residues: mod1=1121 mod3=1279 mod5=1005 mod7=1166 
+  X=214  count=3405  z=-12.41  residues: mod1=868 mod3=694 mod5=1026 mod7=817 
+  X=215  count=4831  z=9.56  residues: mod1=1208 mod3=1417 mod5=1002 mod7=1204 
+  X=217  count=3988  z=-3.43  residues: mod1=917 mod3=770 mod5=1225 mod7=1076 
+  X=218  count=3583  z=-9.67  residues: mod1=939 mod3=798 mod5=978 mod7=868 
+  X=219  count=4569  z=5.53  residues: mod1=1130 mod3=1239 mod5=1047 mod7=1153 
+  X=220  count=3912  z=-4.60  residues: mod1=1045 mod3=1078 mod5=862 mod7=927 
+  X=221  count=4383  z=2.66  residues: mod1=1038 mod3=944 mod5=1228 mod7=1173 
+  X=222  count=3281  z=-14.32  residues: mod1=882 mod3=542 mod5=1069 mod7=788 
+  X=223  count=4969  z=11.69  residues: mod1=1202 mod3=1488 mod5=1007 mod7=1272 
+  X=224  count=4429  z=3.37  residues: mod1=987 mod3=1470 mod5=740 mod7=1232 
+  X=225  count=3739  z=-7.27  residues: mod1=1019 mod3=571 mod5=1288 mod7=861 
+  X=226  count=3821  z=-6.00  residues: mod1=957 mod3=883 mod5=1023 mod7=958 
+  X=227  count=4377  z=2.57  residues: mod1=1119 mod3=1139 mod5=1044 mod7=1075 
+  X=230  count=3571  z=-9.85  residues: mod1=885 mod3=693 mod5=1086 mod7=907 
+  X=231  count=4652  z=6.81  residues: mod1=1187 mod3=1391 mod5=924 mod7=1150 
+  X=232  count=4433  z=3.43  residues: mod1=1111 mod3=1356 mod5=909 mod7=1057 
+  X=233  count=3880  z=-5.09  residues: mod1=891 mod3=753 mod5=1188 mod7=1048 
+  X=234  count=3661  z=-8.47  residues: mod1=928 mod3=803 mod5=1011 mod7=919 
+  X=235  count=4686  z=7.33  residues: mod1=1162 mod3=1311 mod5=1051 mod7=1162 
+  X=236  count=3917  z=-4.52  residues: mod1=1040 mod3=1076 mod5=827 mod7=974 
+  X=238  count=3396  z=-12.55  residues: mod1=846 mod3=662 mod5=1068 mod7=820 
+  X=239  count=4884  z=10.38  residues: mod1=1206 mod3=1462 mod5=1036 mod7=1180 
+  X=240  count=4450  z=3.69  residues: mod1=1031 mod3=1450 mod5=776 mod7=1193 
+  X=241  count=3877  z=-5.14  residues: mod1=1031 mod3=643 mod5=1284 mod7=919 
+  X=242  count=3761  z=-6.93  residues: mod1=949 mod3=828 mod5=1004 mod7=980 
+  X=243  count=4516  z=4.71  residues: mod1=1165 mod3=1228 mod5=1071 mod7=1052 
+  X=246  count=3459  z=-11.58  residues: mod1=874 mod3=651 mod5=1058 mod7=876 
+  X=247  count=4806  z=9.18  residues: mod1=1217 mod3=1398 mod5=1016 mod7=1175 
+  X=249  count=4026  z=-2.84  residues: mod1=1035 mod3=746 mod5=1276 mod7=969 
+  X=250  count=3646  z=-8.70  residues: mod1=876 mod3=785 mod5=992 mod7=993 
+  X=251  count=4654  z=6.84  residues: mod1=1206 mod3=1252 mod5=1072 mod7=1124 
+  X=252  count=3838  z=-5.74  residues: mod1=872 mod3=1092 mod5=816 mod7=1058 
+  X=254  count=3021  z=-18.33  residues: mod1=529 mod3=713 mod5=804 mod7=975 
+  X=255  count=5314  z=17.01  residues: mod1=1522 mod3=1375 mod5=1315 mod7=1102 
+  strongest X-plane: 254 (z=-18.33)
+
+  Significant Y-planes (|z| > 2.5):
+  Y=  0  count=5422  z=18.67  residues: mod1=1452 mod2=1 mod3=1545 mod5=1216 mod7=1208 
+  Y=  1  count=3452  z=-11.69  residues: mod1=788 mod3=666 mod5=1022 mod7=976 
+  Y=  2  count=4408  z=3.04  residues: mod1=1152 mod3=971 mod5=1217 mod7=1068 
+  Y=  3  count=4409  z=3.06  residues: mod1=1051 mod3=1185 mod5=947 mod7=1226 
+  Y=  4  count=4670  z=7.08  residues: mod1=1176 mod3=1303 mod5=1064 mod7=1127 
+  Y=  5  count=3972  z=-3.67  residues: mod1=916 mod3=860 mod5=1129 mod7=1067 
+  Y=  6  count=3969  z=-3.72  residues: mod1=1062 mod3=772 mod5=1234 mod7=901 
+  Y=  7  count=4890  z=10.47  residues: mod1=1197 mod3=1432 mod5=966 mod7=1295 
+  Y=  8  count=4851  z=9.87  residues: mod1=1233 mod3=1423 mod5=1041 mod7=1154 
+  Y=  9  count=3918  z=-4.51  residues: mod1=902 mod3=762 mod5=1173 mod7=1081 
+  Y= 11  count=4738  z=8.13  residues: mod1=1127 mod3=1254 mod5=1109 mod7=1248 
+  Y= 12  count=4475  z=4.08  residues: mod1=1220 mod3=1290 mod5=970 mod7=995 
+  Y= 13  count=4381  z=2.63  residues: mod1=1002 mod3=998 mod5=1196 mod7=1185 
+  Y= 14  count=3819  z=-6.03  residues: mod1=1127 mod3=612 mod5=1276 mod7=804 
+  Y= 15  count=4889  z=10.46  residues: mod1=1101 mod3=1532 mod5=870 mod7=1386 
+  Y= 16  count=5014  z=12.38  residues: mod1=1281 mod3=1464 mod5=1036 mod7=1233 
+  Y= 17  count=3786  z=-6.54  residues: mod1=915 mod3=702 mod5=1168 mod7=1001 
+  Y= 19  count=4673  z=7.13  residues: mod1=1159 mod3=1223 mod5=1080 mod7=1211 
+  Y= 20  count=4511  z=4.63  residues: mod1=1172 mod3=1319 mod5=977 mod7=1043 
+  Y= 22  count=3723  z=-7.51  residues: mod1=999 mod3=726 mod5=1145 mod7=853 
+  Y= 23  count=4994  z=12.08  residues: mod1=1246 mod3=1437 mod5=1018 mod7=1293 
+  Y= 24  count=4732  z=8.04  residues: mod1=1285 mod3=1387 mod5=989 mod7=1071 
+  Y= 25  count=3974  z=-3.64  residues: mod1=880 mod3=767 mod5=1251 mod7=1076 
+  Y= 26  count=3934  z=-4.26  residues: mod1=1026 mod3=901 mod5=1071 mod7=936 
+  Y= 27  count=4811  z=9.26  residues: mod1=1155 mod3=1322 mod5=1052 mod7=1282 
+  Y= 29  count=4414  z=3.14  residues: mod1=969 mod3=997 mod5=1220 mod7=1228 
+  Y= 30  count=3762  z=-6.91  residues: mod1=1122 mod3=567 mod5=1321 mod7=752 
+  Y= 31  count=5116  z=13.96  residues: mod1=1123 mod3=1599 mod5=937 mod7=1457 
+  Y= 32  count=5037  z=12.74  residues: mod1=1238 mod3=1572 mod5=981 mod7=1246 
+  Y= 33  count=3711  z=-7.70  residues: mod1=896 mod3=656 mod5=1148 mod7=1011 
+  Y= 35  count=4449  z=3.68  residues: mod1=1041 mod3=1152 mod5=1061 mod7=1195 
+  Y= 36  count=4463  z=3.89  residues: mod1=1191 mod3=1223 mod5=992 mod7=1057 
+  Y= 38  count=3907  z=-4.68  residues: mod1=1026 mod3=754 mod5=1208 mod7=919 
+  Y= 39  count=4958  z=11.52  residues: mod1=1218 mod3=1401 mod5=1058 mod7=1281 
+  Y= 40  count=4707  z=7.65  residues: mod1=1233 mod3=1371 mod5=946 mod7=1157 
+  Y= 41  count=3895  z=-4.86  residues: mod1=886 mod3=772 mod5=1207 mod7=1030 
+  Y= 42  count=4016  z=-3.00  residues: mod1=1060 mod3=884 mod5=1107 mod7=965 
+  Y= 43  count=4653  z=6.82  residues: mod1=1165 mod3=1239 mod5=1054 mod7=1195 
+  Y= 45  count=4441  z=3.55  residues: mod1=1002 mod3=980 mod5=1242 mod7=1217 
+  Y= 46  count=3654  z=-8.58  residues: mod1=994 mod3=650 mod5=1201 mod7=809 
+  Y= 47  count=5096  z=13.65  residues: mod1=1188 mod3=1581 mod5=975 mod7=1352 
+  Y= 48  count=4866  z=10.10  residues: mod1=1304 mod3=1446 mod5=942 mod7=1174 
+  Y= 49  count=3917  z=-4.52  residues: mod1=933 mod3=756 mod5=1183 mod7=1045 
+  Y= 50  count=3971  z=-3.69  residues: mod1=1068 mod3=911 mod5=1080 mod7=912 
+  Y= 51  count=4570  z=5.54  residues: mod1=1066 mod3=1232 mod5=1069 mod7=1203 
+  Y= 52  count=4470  z=4.00  residues: mod1=1224 mod3=1255 mod5=996 mod7=995 
+  Y= 54  count=3695  z=-7.94  residues: mod1=928 mod3=717 mod5=1174 mod7=876 
+  Y= 55  count=4930  z=11.09  residues: mod1=1181 mod3=1443 mod5=1008 mod7=1298 
+  Y= 56  count=4539  z=5.06  residues: mod1=1241 mod3=1312 mod5=942 mod7=1044 
+  Y= 58  count=3741  z=-7.23  residues: mod1=971 mod3=848 mod5=1061 mod7=861 
+  Y= 59  count=4941  z=11.26  residues: mod1=1134 mod3=1408 mod5=1139 mod7=1260 
+  Y= 61  count=4468  z=3.97  residues: mod1=1027 mod3=1004 mod5=1168 mod7=1269 
+  Y= 62  count=3622  z=-9.07  residues: mod1=1141 mod3=494 mod5=1316 mod7=671 
+  Y= 63  count=5117  z=13.97  residues: mod1=1028 mod3=1723 mod5=895 mod7=1471 
+  Y= 64  count=4958  z=11.52  residues: mod1=1207 mod3=1520 mod5=948 mod7=1283 
+  Y= 65  count=3662  z=-8.45  residues: mod1=972 mod3=612 mod5=1209 mod7=869 
+  Y= 67  count=4384  z=2.67  residues: mod1=1142 mod3=1206 mod5=974 mod7=1062 
+  Y= 68  count=4539  z=5.06  residues: mod1=1187 mod3=1266 mod5=985 mod7=1101 
+  Y= 69  count=4020  z=-2.93  residues: mod1=964 mod3=847 mod5=1150 mod7=1059 
+  Y= 70  count=3872  z=-5.22  residues: mod1=1027 mod3=766 mod5=1156 mod7=923 
+  Y= 71  count=4805  z=9.16  residues: mod1=1203 mod3=1386 mod5=985 mod7=1231 
+  Y= 72  count=4811  z=9.26  residues: mod1=1232 mod3=1419 mod5=997 mod7=1163 
+  Y= 73  count=3866  z=-5.31  residues: mod1=933 mod3=699 mod5=1167 mod7=1067 
+  Y= 74  count=3969  z=-3.72  residues: mod1=1027 mod3=903 mod5=1075 mod7=964 
+  Y= 75  count=4701  z=7.56  residues: mod1=1174 mod3=1326 mod5=1041 mod7=1160 
+  Y= 78  count=3743  z=-7.20  residues: mod1=1026 mod3=662 mod5=1199 mod7=856 
+  Y= 79  count=4867  z=10.12  residues: mod1=1173 mod3=1469 mod5=967 mod7=1258 
+  Y= 80  count=4853  z=9.90  residues: mod1=1235 mod3=1462 mod5=983 mod7=1173 
+  Y= 81  count=3768  z=-6.82  residues: mod1=910 mod3=705 mod5=1181 mod7=972 
+  Y= 82  count=3998  z=-3.27  residues: mod1=1015 mod3=885 mod5=1170 mod7=928 
+  Y= 83  count=4571  z=5.56  residues: mod1=1072 mod3=1274 mod5=1016 mod7=1209 
+  Y= 84  count=4390  z=2.77  residues: mod1=1153 mod3=1245 mod5=988 mod7=1004 
+  Y= 86  count=3702  z=-7.84  residues: mod1=951 mod3=729 mod5=1115 mod7=907 
+  Y= 87  count=4904  z=10.69  residues: mod1=1188 mod3=1435 mod5=1008 mod7=1273 
+  Y= 88  count=4522  z=4.80  residues: mod1=1223 mod3=1364 mod5=905 mod7=1030 
+  Y= 89  count=3947  z=-4.06  residues: mod1=933 mod3=740 mod5=1204 mod7=1070 
+  Y= 90  count=3876  z=-5.15  residues: mod1=996 mod3=849 mod5=1079 mod7=952 
+  Y= 91  count=4798  z=9.06  residues: mod1=1161 mod3=1349 mod5=1091 mod7=1197 
+  Y= 93  count=4477  z=4.11  residues: mod1=1096 mod3=1016 mod5=1200 mod7=1165 
+  Y= 94  count=3655  z=-8.56  residues: mod1=999 mod3=604 mod5=1247 mod7=805 
+  Y= 95  count=5073  z=13.29  residues: mod1=1155 mod3=1607 mod5=957 mod7=1354 
+  Y= 96  count=4831  z=9.56  residues: mod1=1200 mod3=1512 mod5=904 mod7=1215 
+  Y= 97  count=3707  z=-7.76  residues: mod1=951 mod3=649 mod5=1150 mod7=957 
+  Y= 99  count=4430  z=3.38  residues: mod1=1084 mod3=1196 mod5=1026 mod7=1124 
+  Y=100  count=4435  z=3.46  residues: mod1=1221 mod3=1206 mod5=985 mod7=1023 
+  Y=102  count=3772  z=-6.76  residues: mod1=994 mod3=739 mod5=1123 mod7=916 
+  Y=103  count=4892  z=10.50  residues: mod1=1154 mod3=1458 mod5=1027 mod7=1253 
+  Y=104  count=4727  z=7.96  residues: mod1=1225 mod3=1417 mod5=966 mod7=1119 
+  Y=105  count=3975  z=-3.63  residues: mod1=924 mod3=771 mod5=1253 mod7=1027 
+  Y=106  count=3971  z=-3.69  residues: mod1=998 mod3=919 mod5=1114 mod7=940 
+  Y=107  count=4651  z=6.79  residues: mod1=1145 mod3=1232 mod5=1040 mod7=1234 
+  Y=109  count=4418  z=3.20  residues: mod1=1000 mod3=1018 mod5=1213 mod7=1187 
+  Y=110  count=3608  z=-9.28  residues: mod1=962 mod3=627 mod5=1129 mod7=890 
+  Y=111  count=5086  z=13.49  residues: mod1=1198 mod3=1501 mod5=1025 mod7=1362 
+  Y=112  count=4772  z=8.65  residues: mod1=1193 mod3=1468 mod5=991 mod7=1120 
+  Y=113  count=3860  z=-5.40  residues: mod1=937 mod3=720 mod5=1197 mod7=1006 
+  Y=115  count=4588  z=5.82  residues: mod1=1129 mod3=1235 mod5=1016 mod7=1208 
+  Y=116  count=4381  z=2.63  residues: mod1=1148 mod3=1294 mod5=953 mod7=986 
+  Y=118  count=3717  z=-7.60  residues: mod1=945 mod3=705 mod5=1188 mod7=879 
+  Y=119  count=4868  z=10.13  residues: mod1=1233 mod3=1406 mod5=985 mod7=1244 
+  Y=120  count=4673  z=7.13  residues: mod1=1293 mod3=1333 mod5=1021 mod7=1026 
+  Y=122  count=3934  z=-4.26  residues: mod1=1021 mod3=846 mod5=1131 mod7=936 
+  Y=123  count=4727  z=7.96  residues: mod1=1133 mod3=1326 mod5=1005 mod7=1263 
+  Y=126  count=3611  z=-9.24  residues: mod1=1074 mod3=481 mod5=1368 mod7=688 
+  Y=127  count=4928  z=11.06  residues: mod1=1019 mod3=1606 mod5=798 mod7=1505 
+  Y=128  count=4807  z=9.19  residues: mod1=1347 mod3=1295 mod5=1082 mod7=1083 
+  Y=129  count=3336  z=-13.48  residues: mod1=712 mod3=701 mod5=959 mod7=964 
+  Y=133  count=3765  z=-6.86  residues: mod1=844 mod3=830 mod5=1076 mod7=1015 
+  Y=134  count=3622  z=-9.07  residues: mod1=1017 mod3=700 mod5=1114 mod7=791 
+  Y=135  count=4465  z=3.92  residues: mod1=1023 mod3=1341 mod5=892 mod7=1209 
+  Y=136  count=4464  z=3.91  residues: mod1=1223 mod3=1296 mod5=943 mod7=1002 
+  Y=137  count=3761  z=-6.93  residues: mod1=880 mod3=761 mod5=1117 mod7=1003 
+  Y=138  count=3721  z=-7.54  residues: mod1=984 mod3=836 mod5=1070 mod7=831 
+  Y=142  count=3410  z=-12.34  residues: mod1=985 mod3=533 mod5=1174 mod7=718 
+  Y=143  count=4769  z=8.61  residues: mod1=1046 mod3=1511 mod5=902 mod7=1310 
+  Y=144  count=4508  z=4.59  residues: mod1=1176 mod3=1357 mod5=856 mod7=1119 
+  Y=145  count=3645  z=-8.71  residues: mod1=865 mod3=664 mod5=1146 mod7=970 
+  Y=146  count=3822  z=-5.99  residues: mod1=1031 mod3=847 mod5=1034 mod7=910 
+  Y=149  count=3905  z=-4.71  residues: mod1=884 mod3=839 mod5=1178 mod7=1004 
+  Y=150  count=3421  z=-12.17  residues: mod1=890 mod3=677 mod5=1060 mod7=794 
+  Y=151  count=4827  z=9.50  residues: mod1=1106 mod3=1428 mod5=982 mod7=1311 
+  Y=152  count=4390  z=2.77  residues: mod1=1187 mod3=1307 mod5=895 mod7=1001 
+  Y=153  count=3828  z=-5.89  residues: mod1=824 mod3=764 mod5=1143 mod7=1097 
+  Y=154  count=3582  z=-9.68  residues: mod1=946 mod3=835 mod5=999 mod7=802 
+  Y=155  count=4505  z=4.54  residues: mod1=1072 mod3=1227 mod5=995 mod7=1211 
+  Y=158  count=3396  z=-12.55  residues: mod1=998 mod3=524 mod5=1211 mod7=663 
+  Y=159  count=4751  z=8.33  residues: mod1=1030 mod3=1483 mod5=847 mod7=1391 
+  Y=160  count=4648  z=6.74  residues: mod1=1192 mod3=1382 mod5=922 mod7=1152 
+  Y=161  count=3618  z=-9.13  residues: mod1=880 mod3=670 mod5=1120 mod7=948 
+  Y=162  count=3887  z=-4.98  residues: mod1=1046 mod3=874 mod5=1041 mod7=926 
+  Y=165  count=4023  z=-2.89  residues: mod1=889 mod3=850 mod5=1147 mod7=1137 
+  Y=166  count=3549  z=-10.19  residues: mod1=947 mod3=674 mod5=1073 mod7=855 
+  Y=167  count=4592  z=5.88  residues: mod1=1044 mod3=1349 mod5=990 mod7=1209 
+  Y=168  count=4397  z=2.88  residues: mod1=1190 mod3=1318 mod5=917 mod7=972 
+  Y=169  count=3806  z=-6.23  residues: mod1=846 mod3=702 mod5=1196 mod7=1062 
+  Y=170  count=3741  z=-7.23  residues: mod1=978 mod3=877 mod5=1021 mod7=865 
+  Y=171  count=4491  z=4.32  residues: mod1=1091 mod3=1287 mod5=995 mod7=1118 
+  Y=172  count=3959  z=-3.87  residues: mod1=1022 mod3=1090 mod5=908 mod7=939 
+  Y=174  count=3420  z=-12.18  residues: mod1=891 mod3=599 mod5=1133 mod7=797 
+  Y=175  count=4778  z=8.75  residues: mod1=1114 mod3=1448 mod5=891 mod7=1325 
+  Y=176  count=4555  z=5.31  residues: mod1=1221 mod3=1359 mod5=885 mod7=1090 
+  Y=177  count=3668  z=-8.36  residues: mod1=813 mod3=694 mod5=1201 mod7=960 
+  Y=178  count=3859  z=-5.42  residues: mod1=999 mod3=924 mod5=1085 mod7=851 
+  Y=181  count=4045  z=-2.55  residues: mod1=926 mod3=862 mod5=1136 mod7=1121 
+  Y=182  count=3506  z=-10.86  residues: mod1=911 mod3=657 mod5=1116 mod7=822 
+  Y=183  count=4703  z=7.59  residues: mod1=1122 mod3=1411 mod5=963 mod7=1207 
+  Y=185  count=3812  z=-6.14  residues: mod1=838 mod3=765 mod5=1132 mod7=1077 
+  Y=186  count=3625  z=-9.02  residues: mod1=975 mod3=818 mod5=1002 mod7=830 
+  Y=187  count=4508  z=4.59  residues: mod1=1087 mod3=1217 mod5=989 mod7=1215 
+  Y=188  count=4008  z=-3.12  residues: mod1=1143 mod3=1042 mod5=941 mod7=882 
+  Y=190  count=3510  z=-10.79  residues: mod1=1121 mod3=466 mod5=1277 mod7=646 
+  Y=191  count=4646  z=6.71  residues: mod1=968 mod3=1563 mod5=737 mod7=1378 
+  Y=192  count=4709  z=7.68  residues: mod1=1371 mod3=1250 mod5=1117 mod7=971 
+  Y=193  count=3312  z=-13.85  residues: mod1=617 mod3=747 mod5=927 mod7=1021 
+  Y=194  count=3973  z=-3.66  residues: mod1=1127 mod3=865 mod5=1138 mod7=843 
+  Y=197  count=3875  z=-5.17  residues: mod1=815 mod3=861 mod5=1091 mod7=1108 
+  Y=198  count=3535  z=-10.41  residues: mod1=1044 mod3=663 mod5=1133 mod7=695 
+  Y=199  count=4561  z=5.40  residues: mod1=954 mod3=1368 mod5=909 mod7=1330 
+  Y=200  count=4410  z=3.08  residues: mod1=1238 mod3=1291 mod5=918 mod7=963 
+  Y=201  count=3698  z=-7.90  residues: mod1=834 mod3=757 mod5=1073 mod7=1034 
+  Y=202  count=3636  z=-8.85  residues: mod1=999 mod3=818 mod5=989 mod7=830 
+  Y=203  count=4596  z=5.94  residues: mod1=1022 mod3=1223 mod5=1098 mod7=1253 
+  Y=204  count=3983  z=-3.51  residues: mod1=1124 mod3=1122 mod5=865 mod7=872 
+  Y=206  count=3434  z=-11.97  residues: mod1=1032 mod3=578 mod5=1132 mod7=692 
+  Y=207  count=4728  z=7.98  residues: mod1=991 mod3=1489 mod5=909 mod7=1339 
+  Y=208  count=4566  z=5.48  residues: mod1=1294 mod3=1340 mod5=886 mod7=1046 
+  Y=209  count=3673  z=-8.28  residues: mod1=856 mod3=676 mod5=1136 mod7=1005 
+  Y=210  count=3770  z=-6.79  residues: mod1=1021 mod3=850 mod5=1017 mod7=882 
+  Y=212  count=4041  z=-2.61  residues: mod1=1102 mod3=1156 mod5=875 mod7=908 
+  Y=213  count=4000  z=-3.24  residues: mod1=900 mod3=895 mod5=1125 mod7=1080 
+  Y=214  count=3518  z=-10.67  residues: mod1=957 mod3=671 mod5=1077 mod7=813 
+  Y=215  count=4722  z=7.88  residues: mod1=1115 mod3=1381 mod5=956 mod7=1270 
+  Y=217  count=3929  z=-4.34  residues: mod1=863 mod3=805 mod5=1127 mod7=1134 
+  Y=218  count=3637  z=-8.84  residues: mod1=974 mod3=775 mod5=1048 mod7=840 
+  Y=219  count=4540  z=5.08  residues: mod1=1060 mod3=1300 mod5=991 mod7=1189 
+  Y=220  count=3907  z=-4.68  residues: mod1=1086 mod3=1093 mod5=883 mod7=845 
+  Y=222  count=3409  z=-12.35  residues: mod1=991 mod3=491 mod5=1220 mod7=707 
+  Y=223  count=4690  z=7.39  residues: mod1=998 mod3=1502 mod5=804 mod7=1386 
+  Y=224  count=4648  z=6.74  residues: mod1=1413 mod3=1267 mod5=1100 mod7=868 
+  Y=225  count=3409  z=-12.35  residues: mod1=558 mod3=767 mod5=956 mod7=1128 
+  Y=226  count=3835  z=-5.79  residues: mod1=1154 mod3=860 mod5=1052 mod7=769 
+  Y=230  count=3452  z=-11.69  residues: mod1=1020 mod3=622 mod5=1088 mod7=722 
+  Y=231  count=4594  z=5.91  residues: mod1=939 mod3=1399 mod5=952 mod7=1304 
+  Y=233  count=3819  z=-6.03  residues: mod1=765 mod3=767 mod5=1145 mod7=1142 
+  Y=234  count=3625  z=-9.02  residues: mod1=1031 mod3=813 mod5=1004 mod7=777 
+  Y=235  count=4626  z=6.40  residues: mod1=1029 mod3=1267 mod5=1065 mod7=1265 
+  Y=238  count=3460  z=-11.57  residues: mod1=1071 mod3=543 mod5=1187 mod7=659 
+  Y=239  count=4724  z=7.91  residues: mod1=1017 mod3=1519 mod5=852 mod7=1336 
+  Y=240  count=4653  z=6.82  residues: mod1=1519 mod3=1255 mod5=1063 mod7=816 
+  Y=241  count=3584  z=-9.65  residues: mod1=549 mod3=819 mod5=962 mod7=1254 
+  Y=242  count=3647  z=-8.68  residues: mod1=1125 mod3=850 mod5=969 mod7=703 
+  Y=243  count=4400  z=2.92  residues: mod1=895 mod3=1209 mod5=1003 mod7=1293 
+  Y=244  count=4009  z=-3.10  residues: mod1=1222 mod3=1135 mod5=844 mod7=808 
+  Y=246  count=3450  z=-11.72  residues: mod1=1019 mod3=633 mod5=1142 mod7=656 
+  Y=247  count=4729  z=7.99  residues: mod1=974 mod3=1408 mod5=906 mod7=1441 
+  Y=249  count=3807  z=-6.22  residues: mod1=520 mod3=861 mod5=1049 mod7=1377 
+  Y=250  count=3549  z=-10.19  residues: mod1=1208 mod3=724 mod5=1009 mod7=608 
+  Y=251  count=4593  z=5.90  residues: mod1=907 mod3=1292 mod5=1003 mod7=1391 
+  Y=252  count=3993  z=-3.35  residues: mod1=1494 mod3=1011 mod5=1015 mod7=473 
+  Y=253  count=4040  z=-2.63  residues: mod1=465 mod3=1042 mod5=997 mod7=1536 
+  strongest Y-plane: 0 (z=18.67)
+
+  Significant Z-planes (|z| > 2.5):
+  Z=  0  count=5242  z=15.90  residues: mod1=1069 mod2=1 mod3=1684 mod5=905 mod7=1583 
+  Z=  1  count=3775  z=-6.71  residues: mod1=1219 mod3=555 mod5=1349 mod7=652 
+  Z=  2  count=4639  z=6.60  residues: mod1=1005 mod3=1000 mod5=1313 mod7=1321 
+  Z=  4  count=5032  z=12.66  residues: mod1=1201 mod3=1407 mod5=1110 mod7=1314 
+  Z=  5  count=3993  z=-3.35  residues: mod1=1062 mod3=821 mod5=1142 mod7=968 
+  Z=  7  count=4760  z=8.47  residues: mod1=1280 mod3=1390 mod5=989 mod7=1101 
+  Z=  8  count=5214  z=15.47  residues: mod1=1303 mod3=1514 mod5=1063 mod7=1334 
+  Z=  9  count=3893  z=-4.89  residues: mod1=1026 mod3=771 mod5=1200 mod7=896 
+  Z= 10  count=4392  z=2.80  residues: mod1=1079 mod3=984 mod5=1160 mod7=1169 
+  Z= 11  count=4595  z=5.93  residues: mod1=1174 mod3=1300 mod5=1010 mod7=1111 
+  Z= 12  count=4802  z=9.12  residues: mod1=1200 mod3=1280 mod5=1102 mod7=1220 
+  Z= 14  count=3884  z=-5.03  residues: mod1=1034 mod3=718 mod5=1205 mod7=927 
+  Z= 15  count=5163  z=14.68  residues: mod1=1197 mod3=1594 mod5=1033 mod7=1339 
+  Z= 16  count=5130  z=14.17  residues: mod1=1202 mod3=1552 mod5=1047 mod7=1329 
+  Z= 17  count=3700  z=-7.87  residues: mod1=910 mod3=686 mod5=1220 mod7=884 
+  Z= 19  count=4507  z=4.57  residues: mod1=1154 mod3=1259 mod5=1015 mod7=1079 
+  Z= 20  count=4889  z=10.46  residues: mod1=1288 mod3=1316 mod5=1063 mod7=1222 
+  Z= 22  count=3996  z=-3.30  residues: mod1=1026 mod3=753 mod5=1198 mod7=1019 
+  Z= 23  count=4955  z=11.47  residues: mod1=1176 mod3=1491 mod5=1031 mod7=1257 
+  Z= 24  count=4948  z=11.37  residues: mod1=1263 mod3=1450 mod5=1011 mod7=1224 
+  Z= 25  count=4048  z=-2.50  residues: mod1=943 mod3=807 mod5=1283 mod7=1015 
+  Z= 27  count=4841  z=9.72  residues: mod1=1177 mod3=1345 mod5=1082 mod7=1237 
+  Z= 28  count=4399  z=2.91  residues: mod1=1240 mod3=1195 mod5=994 mod7=970 
+  Z= 29  count=4523  z=4.82  residues: mod1=1062 mod3=1015 mod5=1205 mod7=1241 
+  Z= 30  count=3683  z=-8.13  residues: mod1=1099 mod3=640 mod5=1182 mod7=762 
+  Z= 31  count=5286  z=16.58  residues: mod1=1184 mod3=1605 mod5=1045 mod7=1452 
+  Z= 32  count=5192  z=15.13  residues: mod1=1190 mod3=1579 mod5=1049 mod7=1374 
+  Z= 33  count=3793  z=-6.43  residues: mod1=1012 mod3=705 mod5=1203 mod7=873 
+  Z= 34  count=4418  z=3.20  residues: mod1=1108 mod3=1013 mod5=1155 mod7=1142 
+  Z= 35  count=4510  z=4.62  residues: mod1=1141 mod3=1222 mod5=1038 mod7=1109 
+  Z= 36  count=4829  z=9.53  residues: mod1=1233 mod3=1329 mod5=1042 mod7=1225 
+  Z= 38  count=3977  z=-3.60  residues: mod1=1037 mod3=792 mod5=1212 mod7=936 
+  Z= 39  count=4995  z=12.09  residues: mod1=1186 mod3=1491 mod5=1044 mod7=1274 
+  Z= 40  count=4874  z=10.23  residues: mod1=1236 mod3=1412 mod5=1016 mod7=1210 
+  Z= 43  count=4785  z=8.85  residues: mod1=1148 mod3=1316 mod5=1112 mod7=1209 
+  Z= 45  count=4499  z=4.45  residues: mod1=1030 mod3=1014 mod5=1240 mod7=1215 
+  Z= 46  count=3594  z=-9.50  residues: mod1=1047 mod3=640 mod5=1169 mod7=738 
+  Z= 47  count=5226  z=15.65  residues: mod1=1161 mod3=1582 mod5=1048 mod7=1435 
+  Z= 48  count=5007  z=12.28  residues: mod1=1260 mod3=1483 mod5=1002 mod7=1262 
+  Z= 49  count=4033  z=-2.73  residues: mod1=975 mod3=774 mod5=1275 mod7=1009 
+  Z= 50  count=4006  z=-3.15  residues: mod1=1110 mod3=908 mod5=1040 mod7=948 
+  Z= 51  count=4732  z=8.04  residues: mod1=1100 mod3=1297 mod5=1122 mod7=1213 
+  Z= 52  count=4471  z=4.02  residues: mod1=1215 mod3=1222 mod5=998 mod7=1036 
+  Z= 53  count=4424  z=3.29  residues: mod1=1014 mod3=987 mod5=1233 mod7=1190 
+  Z= 54  count=3684  z=-8.11  residues: mod1=1061 mod3=750 mod5=1074 mod7=799 
+  Z= 55  count=5146  z=14.42  residues: mod1=1196 mod3=1476 mod5=1055 mod7=1419 
+  Z= 56  count=4710  z=7.70  residues: mod1=1282 mod3=1415 mod5=991 mod7=1022 
+  Z= 58  count=3803  z=-6.28  residues: mod1=1076 mod3=807 mod5=1051 mod7=869 
+  Z= 59  count=5097  z=13.66  residues: mod1=1152 mod3=1323 mod5=1237 mod7=1385 
+  Z= 61  count=4768  z=8.59  residues: mod1=1000 mod3=1074 mod5=1311 mod7=1383 
+  Z= 62  count=3521  z=-10.63  residues: mod1=1150 mod3=525 mod5=1241 mod7=605 
+  Z= 63  count=5382  z=18.06  residues: mod1=1041 mod3=1706 mod5=1004 mod7=1631 
+  Z= 64  count=5099  z=13.69  residues: mod1=1246 mod3=1529 mod5=982 mod7=1342 
+  Z= 65  count=3620  z=-9.10  residues: mod1=938 mod3=660 mod5=1177 mod7=845 
+  Z= 67  count=4508  z=4.59  residues: mod1=1129 mod3=1255 mod5=1034 mod7=1090 
+  Z= 68  count=4664  z=6.99  residues: mod1=1232 mod3=1302 mod5=958 mod7=1172 
+  Z= 69  count=4025  z=-2.86  residues: mod1=946 mod3=889 mod5=1144 mod7=1046 
+  Z= 70  count=3810  z=-6.17  residues: mod1=1015 mod3=732 mod5=1143 mod7=920 
+  Z= 71  count=4833  z=9.59  residues: mod1=1164 mod3=1409 mod5=993 mod7=1267 
+  Z= 72  count=4825  z=9.47  residues: mod1=1284 mod3=1451 mod5=965 mod7=1125 
+  Z= 73  count=3869  z=-5.26  residues: mod1=875 mod3=756 mod5=1246 mod7=992 
+  Z= 74  count=3982  z=-3.52  residues: mod1=1099 mod3=851 mod5=1102 mod7=930 
+  Z= 75  count=4710  z=7.70  residues: mod1=1095 mod3=1306 mod5=1093 mod7=1216 
+  Z= 76  count=4413  z=3.12  residues: mod1=1186 mod3=1180 mod5=1004 mod7=1043 
+  Z= 78  count=3553  z=-10.13  residues: mod1=1009 mod3=641 mod5=1115 mod7=788 
+  Z= 79  count=5025  z=12.55  residues: mod1=1133 mod3=1528 mod5=965 mod7=1399 
+  Z= 80  count=4861  z=10.03  residues: mod1=1246 mod3=1488 mod5=927 mod7=1200 
+  Z= 81  count=3758  z=-6.97  residues: mod1=891 mod3=711 mod5=1167 mod7=989 
+  Z= 83  count=4618  z=6.28  residues: mod1=1105 mod3=1243 mod5=1098 mod7=1172 
+  Z= 86  count=3801  z=-6.31  residues: mod1=1075 mod3=735 mod5=1158 mod7=833 
+  Z= 87  count=5068  z=13.22  residues: mod1=1161 mod3=1456 mod5=1067 mod7=1384 
+  Z= 88  count=4606  z=6.10  residues: mod1=1291 mod3=1377 mod5=927 mod7=1011 
+  Z= 90  count=3636  z=-8.85  residues: mod1=1002 mod3=771 mod5=1027 mod7=836 
+  Z= 91  count=4896  z=10.57  residues: mod1=1120 mod3=1284 mod5=1161 mod7=1331 
+  Z= 93  count=4639  z=6.60  residues: mod1=1003 mod3=1066 mod5=1281 mod7=1289 
+  Z= 94  count=3460  z=-11.57  residues: mod1=1096 mod3=546 mod5=1180 mod7=638 
+  Z= 95  count=5184  z=15.00  residues: mod1=1094 mod3=1608 mod5=1001 mod7=1481 
+  Z= 96  count=4864  z=10.07  residues: mod1=1199 mod3=1480 mod5=994 mod7=1191 
+  Z= 97  count=3760  z=-6.94  residues: mod1=947 mod3=690 mod5=1163 mod7=960 
+  Z= 99  count=4610  z=6.16  residues: mod1=1050 mod3=1245 mod5=1075 mod7=1240 
+  Z=100  count=4412  z=3.11  residues: mod1=1203 mod3=1262 mod5=940 mod7=1007 
+  Z=102  count=3613  z=-9.21  residues: mod1=1056 mod3=690 mod5=1061 mod7=806 
+  Z=103  count=5053  z=12.98  residues: mod1=1181 mod3=1439 mod5=1065 mod7=1368 
+  Z=104  count=4476  z=4.09  residues: mod1=1237 mod3=1303 mod5=952 mod7=984 
+  Z=106  count=3752  z=-7.07  residues: mod1=1041 mod3=847 mod5=1014 mod7=850 
+  Z=107  count=4855  z=9.93  residues: mod1=1104 mod3=1297 mod5=1107 mod7=1347 
+  Z=109  count=4558  z=5.36  residues: mod1=964 mod3=1011 mod5=1273 mod7=1310 
+  Z=110  count=3518  z=-10.67  residues: mod1=1029 mod3=609 mod5=1167 mod7=713 
+  Z=111  count=5296  z=16.73  residues: mod1=1205 mod3=1628 mod5=1005 mod7=1458 
+  Z=112  count=4641  z=6.64  residues: mod1=1288 mod3=1387 mod5=968 mod7=998 
+  Z=113  count=4000  z=-3.24  residues: mod1=885 mod3=775 mod5=1219 mod7=1121 
+  Z=114  count=3877  z=-5.14  residues: mod1=1132 mod3=864 mod5=1060 mod7=821 
+  Z=115  count=4821  z=9.41  residues: mod1=1069 mod3=1285 mod5=1094 mod7=1373 
+  Z=117  count=4502  z=4.49  residues: mod1=969 mod3=1006 mod5=1272 mod7=1255 
+  Z=118  count=3483  z=-11.21  residues: mod1=1003 mod3=668 mod5=1087 mod7=725 
+  Z=119  count=5197  z=15.20  residues: mod1=1160 mod3=1455 mod5=1131 mod7=1451 
+  Z=120  count=4449  z=3.68  residues: mod1=1268 mod3=1371 mod5=941 mod7=869 
+  Z=122  count=3659  z=-8.50  residues: mod1=1046 mod3=786 mod5=1070 mod7=757 
+  Z=123  count=5031  z=12.65  residues: mod1=1093 mod3=1335 mod5=1182 mod7=1421 
+  Z=124  count=3994  z=-3.34  residues: mod1=1229 mod3=1089 mod5=871 mod7=805 
+  Z=125  count=4617  z=6.27  residues: mod1=969 mod3=1062 mod5=1273 mod7=1313 
+  Z=126  count=3578  z=-9.75  residues: mod1=1253 mod3=440 mod5=1330 mod7=555 
+  Z=127  count=5088  z=13.52  residues: mod1=865 mod3=1716 mod5=855 mod7=1652 
+  Z=128  count=4787  z=8.89  residues: mod1=1182 mod3=1379 mod5=989 mod7=1237 
+  Z=129  count=3356  z=-13.17  residues: mod1=840 mod3=632 mod5=1084 mod7=800 
+  Z=130  count=3976  z=-3.61  residues: mod1=1044 mod3=911 mod5=1046 mod7=975 
+  Z=133  count=3830  z=-5.86  residues: mod1=872 mod3=878 mod5=1065 mod7=1015 
+  Z=134  count=3480  z=-11.26  residues: mod1=954 mod3=672 mod5=1026 mod7=828 
+  Z=135  count=4546  z=5.17  residues: mod1=1050 mod3=1369 mod5=962 mod7=1165 
+  Z=136  count=4448  z=3.66  residues: mod1=1167 mod3=1261 mod5=925 mod7=1095 
+  Z=137  count=3643  z=-8.74  residues: mod1=842 mod3=773 mod5=1115 mod7=913 
+  Z=138  count=3608  z=-9.28  residues: mod1=976 mod3=810 mod5=992 mod7=830 
+  Z=139  count=4420  z=3.23  residues: mod1=999 mod3=1212 mod5=1034 mod7=1175 
+  Z=140  count=3921  z=-4.46  residues: mod1=1068 mod3=1052 mod5=926 mod7=875 
+  Z=141  count=4022  z=-2.90  residues: mod1=952 mod3=893 mod5=1113 mod7=1064 
+  Z=142  count=3287  z=-14.23  residues: mod1=1005 mod3=557 mod5=1042 mod7=683 
+  Z=143  count=4667  z=7.04  residues: mod1=1057 mod3=1420 mod5=932 mod7=1258 
+  Z=144  count=4504  z=4.52  residues: mod1=1242 mod3=1353 mod5=841 mod7=1068 
+  Z=145  count=3566  z=-9.93  residues: mod1=821 mod3=694 mod5=1107 mod7=944 
+  Z=146  count=3617  z=-9.15  residues: mod1=968 mod3=849 mod5=963 mod7=837 
+  Z=147  count=4386  z=2.71  residues: mod1=992 mod3=1199 mod5=1025 mod7=1170 
+  Z=149  count=3942  z=-4.14  residues: mod1=883 mod3=863 mod5=1085 mod7=1111 
+  Z=150  count=3377  z=-12.84  residues: mod1=970 mod3=621 mod5=1033 mod7=753 
+  Z=151  count=4686  z=7.33  residues: mod1=1062 mod3=1389 mod5=973 mod7=1262 
+  Z=153  count=3849  z=-5.57  residues: mod1=838 mod3=784 mod5=1132 mod7=1095 
+  Z=154  count=3463  z=-11.52  residues: mod1=988 mod3=771 mod5=920 mod7=784 
+  Z=155  count=4521  z=4.79  residues: mod1=1054 mod3=1156 mod5=1060 mod7=1251 
+  Z=156  count=3747  z=-7.14  residues: mod1=1070 mod3=1019 mod5=832 mod7=826 
+  Z=158  count=3254  z=-14.74  residues: mod1=1001 mod3=519 mod5=1132 mod7=602 
+  Z=159  count=4837  z=9.66  residues: mod1=1025 mod3=1497 mod5=907 mod7=1408 
+  Z=160  count=4634  z=6.53  residues: mod1=1145 mod3=1423 mod5=878 mod7=1188 
+  Z=161  count=3517  z=-10.69  residues: mod1=818 mod3=611 mod5=1170 mod7=918 
+  Z=162  count=3752  z=-7.07  residues: mod1=967 mod3=894 mod5=1008 mod7=883 
+  Z=164  count=4047  z=-2.52  residues: mod1=1100 mod3=1117 mod5=879 mod7=951 
+  Z=165  count=3932  z=-4.29  residues: mod1=898 mod3=838 mod5=1112 mod7=1084 
+  Z=166  count=3406  z=-12.40  residues: mod1=996 mod3=658 mod5=1017 mod7=735 
+  Z=167  count=4661  z=6.94  residues: mod1=1067 mod3=1323 mod5=1008 mod7=1263 
+  Z=169  count=3776  z=-6.70  residues: mod1=876 mod3=697 mod5=1140 mod7=1063 
+  Z=170  count=3558  z=-10.05  residues: mod1=997 mod3=767 mod5=1024 mod7=770 
+  Z=171  count=4510  z=4.62  residues: mod1=1026 mod3=1212 mod5=1041 mod7=1231 
+  Z=172  count=3849  z=-5.57  residues: mod1=1087 mod3=1102 mod5=797 mod7=863 
+  Z=174  count=3210  z=-15.42  residues: mod1=947 mod3=590 mod5=1023 mod7=650 
+  Z=175  count=4750  z=8.32  residues: mod1=1059 mod3=1445 mod5=948 mod7=1298 
+  Z=177  count=3670  z=-8.33  residues: mod1=756 mod3=715 mod5=1193 mod7=1006 
+  Z=178  count=3595  z=-9.48  residues: mod1=981 mod3=856 mod5=985 mod7=773 
+  Z=179  count=4505  z=4.54  residues: mod1=997 mod3=1211 mod5=1032 mod7=1265 
+  Z=180  count=3908  z=-4.66  residues: mod1=1160 mod3=1104 mod5=801 mod7=843 
+  Z=182  count=3217  z=-15.31  residues: mod1=972 mod3=632 mod5=956 mod7=657 
+  Z=183  count=4783  z=8.82  residues: mod1=1099 mod3=1391 mod5=997 mod7=1296 
+  Z=184  count=3961  z=-3.84  residues: mod1=1163 mod3=1204 mod5=800 mod7=794 
+  Z=185  count=4037  z=-2.67  residues: mod1=802 mod3=809 mod5=1232 mod7=1194 
+  Z=186  count=3305  z=-13.95  residues: mod1=923 mod3=703 mod5=939 mod7=740 
+  Z=187  count=4689  z=7.38  residues: mod1=1009 mod3=1303 mod5=1116 mod7=1261 
+  Z=188  count=3781  z=-6.62  residues: mod1=1093 mod3=1100 mod5=867 mod7=721 
+  Z=190  count=3249  z=-14.82  residues: mod1=1069 mod3=457 mod5=1180 mod7=543 
+  Z=191  count=4696  z=7.48  residues: mod1=948 mod3=1480 mod5=834 mod7=1434 
+  Z=192  count=4543  z=5.13  residues: mod1=1124 mod3=1343 mod5=937 mod7=1139 
+  Z=193  count=3460  z=-11.57  residues: mod1=793 mod3=628 mod5=1129 mod7=910 
+  Z=194  count=3750  z=-7.10  residues: mod1=988 mod3=881 mod5=982 mod7=899 
+  Z=197  count=3912  z=-4.60  residues: mod1=855 mod3=887 mod5=1085 mod7=1085 
+  Z=198  count=3538  z=-10.36  residues: mod1=1040 mod3=662 mod5=1064 mod7=772 
+  Z=199  count=4777  z=8.73  residues: mod1=1108 mod3=1378 mod5=996 mod7=1295 
+  Z=201  count=3776  z=-6.70  residues: mod1=816 mod3=753 mod5=1175 mod7=1032 
+  Z=202  count=3550  z=-10.18  residues: mod1=965 mod3=804 mod5=952 mod7=829 
+  Z=203  count=4581  z=5.71  residues: mod1=1065 mod3=1267 mod5=1055 mod7=1194 
+  Z=204  count=3784  z=-6.57  residues: mod1=1063 mod3=1100 mod5=810 mod7=811 
+  Z=206  count=3227  z=-15.16  residues: mod1=996 mod3=549 mod5=1045 mod7=637 
+  Z=207  count=4803  z=9.13  residues: mod1=1041 mod3=1470 mod5=950 mod7=1342 
+  Z=209  count=3668  z=-8.36  residues: mod1=816 mod3=673 mod5=1158 mod7=1021 
+  Z=210  count=3561  z=-10.01  residues: mod1=986 mod3=822 mod5=940 mod7=813 
+  Z=211  count=4413  z=3.12  residues: mod1=989 mod3=1145 mod5=1053 mod7=1226 
+  Z=212  count=3961  z=-3.84  residues: mod1=1141 mod3=1115 mod5=834 mod7=871 
+  Z=214  count=3297  z=-14.08  residues: mod1=931 mod3=618 mod5=1052 mod7=696 
+  Z=215  count=4727  z=7.96  residues: mod1=1087 mod3=1372 mod5=1004 mod7=1264 
+  Z=217  count=3806  z=-6.23  residues: mod1=823 mod3=730 mod5=1159 mod7=1094 
+  Z=218  count=3381  z=-12.78  residues: mod1=973 mod3=712 mod5=935 mod7=761 
+  Z=219  count=4650  z=6.77  residues: mod1=1061 mod3=1232 mod5=1095 mod7=1262 
+  Z=220  count=3756  z=-7.00  residues: mod1=1104 mod3=1081 mod5=807 mod7=764 
+  Z=222  count=3110  z=-16.96  residues: mod1=972 mod3=476 mod5=1086 mod7=576 
+  Z=223  count=4859  z=10.00  residues: mod1=1044 mod3=1468 mod5=878 mod7=1469 
+  Z=224  count=4429  z=3.37  residues: mod1=1213 mod3=1350 mod5=877 mod7=989 
+  Z=225  count=3583  z=-9.67  residues: mod1=755 mod3=703 mod5=1133 mod7=992 
+  Z=226  count=3586  z=-9.62  residues: mod1=1017 mod3=829 mod5=952 mod7=788 
+  Z=228  count=3970  z=-3.71  residues: mod1=1127 mod3=1128 mod5=846 mod7=869 
+  Z=230  count=3162  z=-16.16  residues: mod1=908 mod3=597 mod5=988 mod7=669 
+  Z=231  count=4706  z=7.64  residues: mod1=1051 mod3=1321 mod5=1011 mod7=1323 
+  Z=233  count=3965  z=-3.78  residues: mod1=811 mod3=816 mod5=1205 mod7=1133 
+  Z=234  count=3508  z=-10.83  residues: mod1=988 mod3=796 mod5=971 mod7=753 
+  Z=235  count=4603  z=6.05  residues: mod1=1013 mod3=1217 mod5=1087 mod7=1286 
+  Z=236  count=3803  z=-6.28  residues: mod1=1083 mod3=1059 mod5=836 mod7=825 
+  Z=238  count=3187  z=-15.77  residues: mod1=966 mod3=552 mod5=1044 mod7=625 
+  Z=239  count=4766  z=8.56  residues: mod1=1030 mod3=1466 mod5=938 mod7=1332 
+  Z=241  count=3731  z=-7.39  residues: mod1=757 mod3=708 mod5=1202 mod7=1064 
+  Z=242  count=3469  z=-11.43  residues: mod1=1008 mod3=818 mod5=926 mod7=717 
+  Z=243  count=4534  z=4.99  residues: mod1=1012 mod3=1186 mod5=1062 mod7=1274 
+  Z=244  count=3859  z=-5.42  residues: mod1=1120 mod3=1135 mod5=832 mod7=772 
+  Z=246  count=3234  z=-15.05  residues: mod1=927 mod3=591 mod5=1012 mod7=704 
+  Z=247  count=4751  z=8.33  residues: mod1=1076 mod3=1379 mod5=958 mod7=1338 
+  Z=249  count=4002  z=-3.21  residues: mod1=792 mod3=773 mod5=1169 mod7=1268 
+  Z=250  count=3376  z=-12.86  residues: mod1=959 mod3=746 mod5=915 mod7=756 
+  Z=251  count=4652  z=6.81  residues: mod1=1019 mod3=1239 mod5=1092 mod7=1302 
+  Z=252  count=3825  z=-5.94  residues: mod1=1181 mod3=1066 mod5=849 mod7=729 
+  Z=254  count=3303  z=-13.98  residues: mod1=1208 mod3=337 mod5=1266 mod7=492 
+  Z=255  count=4714  z=7.76  residues: mod1=837 mod3=1682 mod5=684 mod7=1511 
+  strongest Z-plane: 63 (z=18.06)
+
+  Residue class distribution (mod 8) across all points:
+    mod 0 = 0:      0  (  0.0%)
+    mod 1 = 1: 269235  ( 25.0%)
+    mod 2 = 2:      1  (  0.0%)
+    mod 3 = 3: 269577  ( 25.0%)
+    mod 4 = 4:      0  (  0.0%)
+    mod 5 = 5: 269528  ( 25.0%)
+    mod 6 = 6:      0  (  0.0%)
+    mod 7 = 7: 269530  ( 25.0%)

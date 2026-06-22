@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2025/dev/Debian) (preloaded format=pdflatex 2026.6.9)  21 JUN 2026 18:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2025/dev/Debian) (preloaded format=pdflatex 2026.6.9)  21 JUN 2026 19:20
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -445,7 +445,7 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 20.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-<odd.png, id=64, 393.47pt x 459.7175pt>
+<odd.png, id=68, 393.47pt x 459.7175pt>
 File: odd.png Graphic file (type png)
 <use odd.png>
 Package pdftex.def Info: odd.png  used on input line 42.
@@ -478,9 +478,28 @@ $+7\OML/cmm/m/it/10.95 :\OT1/cmr/m/n/10.95 15 \OMS/cmsy/m/n/10.95 !
 
 
 [3]
+! Undefined control sequence.
+l.296 \n
+        \n\section{Discussion}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.296 \n\n
+          \section{Discussion}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
 
 [4]
-Overfull \hbox (12.7879pt too wide) in paragraph at lines 317--319
+Overfull \hbox (12.7879pt too wide) in paragraph at lines 361--363
 []\OT1/cmr/m/n/10.95 The eigen-func-tions of $[]$ should be con-structible from
  the Hilbert curve's plane-decomposition
  []
@@ -497,35 +516,37 @@ LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `paper3.out' has not changed.
-(rerunfilecheck)             Checksum: 0CE6774B5A645601742D839205FEFD3B;2459.
+(rerunfilecheck)             Checksum: 908BCE480EE4E2809582A2E2F4248A1C;2749.
  ) 
 Here is how much of TeX's memory you used:
- 12109 strings out of 475102
- 188060 string characters out of 5764878
- 602634 words of memory out of 5000000
- 34931 multiletter control sequences out of 15000+600000
+ 12113 strings out of 475102
+ 188122 string characters out of 5764878
+ 602721 words of memory out of 5000000
+ 34933 multiletter control sequences out of 15000+600000
  569243 words of font info for 76 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 75i,11n,79p,658b,568s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,658b,527s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </home/wessorh/.texlive2025/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1095.6
 00pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><
 /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/s
 hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/t
 exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-
-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fo
-nts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/typ
-e1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
-ic/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.p
-fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on paper3.pdf (7 pages, 384263 bytes).
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-
+dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pf
+b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/
+share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/
+texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf
+-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on paper3.pdf (7 pages, 403108 bytes).
 PDF statistics:
- 232 PDF objects out of 1000 (max. 8388607)
- 188 compressed objects within 2 object streams
- 51 named destinations out of 1000 (max. 500000)
- 126 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 248 PDF objects out of 1000 (max. 8388607)
+ 200 compressed objects within 2 object streams
+ 53 named destinations out of 1000 (max. 500000)
+ 134 words of extra memory for PDF output out of 10000 (max. 10000000)
 
