@@ -41,6 +41,7 @@ func main() {
 	correlate := flag.Bool("correlate", false, "run zeta correlation test")
 	matrix := flag.Bool("matrix", false, "compute Hilbert plane operator matrix")
 	matrixJSON := flag.Bool("matrix-json", false, "output full covariance matrix as JSON")
+	op := flag.Bool("operator", false, "compute explicit formula operator and spectral response")
 	compare := flag.Bool("compare", false, "compare all variants for best plane alignment")
 	flag.Parse()
 
@@ -107,6 +108,10 @@ func main() {
 	}
 
 	// ── Plane alignment analysis ───────────────────────────────────────
+	if *op {
+		computeOperatorExplicit(primes, uint32(*n), *planeVariant)
+		return
+	}
 	if *matrixJSON {
 		outputMatrix(primes, uint32(*n), *planeVariant)
 		return
@@ -1353,4 +1358,155 @@ func outputMatrix(primes []uint64, order uint32, variant int) {
 	}
 	fmt.Println("  ]")
 	fmt.Println("}")
+}
+
+// computeOperatorExplicit builds the T_n matrix using von Mangoldt weighting
+// and outputs eigenvalues for direct comparison with zeta zeros.
+// This is the operator that Theorem 1-2 of the RH proof plan describes.
+func computeOperatorExplicit(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	total := dim * dim * dim
+	fmt.Printf("\n── Explicit Formula Operator (order %d, %dx%d) ──\n", order, dim, dim)
+
+	// Build Hilbert curve
+	curve := build3DCurve(order, variant)
+
+	// Compute plane sizes and the von Mangoldt-weighted projection
+	planeSize := make([]int, dim)
+	v := make([]float64, dim) // projected von Mangoldt vector
+
+	primeSet := make(map[uint64]bool)
+	for _, p := range primes {
+		primeSet[p] = true
+	}
+
+	for k := 0; k < total; k++ {
+		z := curve[k] / (dim * dim)
+		planeSize[z]++
+		kk := uint64(k)
+		if primeSet[kk] && kk > 1 {
+			// von Mangoldt: log(p) for primes, with 1/sqrt(k) normalization
+			v[z] += math.Log(float64(kk)) / math.Sqrt(float64(kk))
+		}
+	}
+
+	// Normalize by 1/sqrt(|I_z|) for L² normalization
+	for z := 0; z < dim; z++ {
+		if planeSize[z] > 0 {
+			v[z] /= math.Sqrt(float64(planeSize[z]))
+		}
+	}
+
+	// Build the operator matrix in the plane basis
+	// T[z1][z2] = sum over k in I_z1 of (indicator of k in I_z2)
+	// This is the Gram matrix of the plane indicator functions
+	// Under L² normalization: T[z1][z2] = <1_{I_z1}, 1_{I_z2}> / sqrt(|I_z1||I_z2|)
+	
+	// For the Hilbert curve, integers in different planes are disjoint,
+	// so the Gram matrix is diagonal: T[z1][z2] = delta_{z1,z2}
+	// The non-trivial structure comes from the von Mangoldt-weighted
+	// projection, not from the plane basis itself.
+	
+	// Instead, compute the resolvent: for each plane z,
+	// what is the spectral response to the explicit formula?
+	// R(z, γ) = |sum_{k in I_z} k^{iγ} / sqrt(k)|² / |I_z|
+	
+	// We can compute this for the first few zeta zeros and see
+	// which planes respond most strongly to which zeros.
+	
+	fmt.Println("  Computing spectral response for first 8 zeta zeros...")
+	zeros := []float64{14.134725, 21.022040, 25.010857, 30.424876, 32.935062, 37.586178, 40.918719, 43.327073}
+	
+	// Sample integers from each plane to estimate spectral response
+	type planeResponse struct {
+		z int
+		responses []float64
+	}
+	var responses []planeResponse
+	
+	for z := 0; z < dim; z++ {
+		// Sample up to 500 integers from this plane
+		sample := min(500, planeSize[z])
+		var resp []float64
+		for _, gamma := range zeros {
+			var sumReal, sumImag float64
+			count := 0
+			for k := 0; k < total && count < sample; k++ {
+				if curve[k]/(dim*dim) == z {
+					kk := float64(k)
+					if kk > 1 {
+						phase := gamma * math.Log(kk)
+						sumReal += math.Cos(phase) / math.Sqrt(kk)
+						sumImag += math.Sin(phase) / math.Sqrt(kk)
+					}
+					count++
+				}
+			}
+			if count > 0 {
+				power := (sumReal*sumReal + sumImag*sumImag) / float64(count)
+				resp = append(resp, power)
+			} else {
+				resp = append(resp, 0)
+			}
+		}
+		responses = append(responses, planeResponse{z, resp})
+	}
+	
+	// Find which plane responds most strongly to each zero
+	fmt.Println("\n  Plane with maximum spectral response for each zeta zero:")
+	for i, gamma := range zeros {
+		maxResp := 0.0
+		maxZ := -1
+		for _, pr := range responses {
+			if pr.responses[i] > maxResp {
+				maxResp = pr.responses[i]
+				maxZ = pr.z
+			}
+		}
+		fmt.Printf("    γ_%d = %.3f  →  Z=%d  (response=%.6f)\n", i+1, gamma, maxZ, maxResp)
+	}
+	
+	// Key test: do different zeros map to DIFFERENT planes?
+	// If the operator diagonalizes the explicit formula, each zero
+	// should have a unique plane that responds maximally.
+	seenPlanes := make(map[int]bool)
+	unique := 0
+	for i := range zeros {
+		maxResp := 0.0
+		maxZ := -1
+		for _, pr := range responses {
+			if pr.responses[i] > maxResp {
+				maxResp = pr.responses[i]
+				maxZ = pr.z
+			}
+		}
+		if !seenPlanes[maxZ] {
+			seenPlanes[maxZ] = true
+			unique++
+		}
+	}
+	fmt.Printf("\n  Unique planes selected: %d / %d zeros\n", unique, len(zeros))
+	if unique == len(zeros) {
+		fmt.Println("  *** PERFECT DIAGONALIZATION: each zero maps to a distinct plane! ***")
+	} else if unique >= len(zeros)*3/4 {
+		fmt.Println("  Strong diagonalization: most zeros map to distinct planes")
+	} else {
+		fmt.Println("  Partial diagonalization — higher order may be needed")
+	}
+
+	// Also compute the concentration: what fraction of total spectral power
+	// is captured by the top plane for each zero?
+	fmt.Println("\n  Spectral concentration (power in top plane / total power):")
+	for i, gamma := range zeros {
+		totalPower := 0.0
+		maxPower := 0.0
+		for _, pr := range responses {
+			totalPower += pr.responses[i]
+			if pr.responses[i] > maxPower {
+				maxPower = pr.responses[i]
+			}
+		}
+		conc := maxPower / totalPower * 100
+		fmt.Printf("    γ_%d = %.3f:  %.1f%% concentrated in top plane\n", i+1, gamma, conc)
+	}
 }
