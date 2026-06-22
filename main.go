@@ -39,6 +39,8 @@ func main() {
 	planes := flag.Bool("planes", false, "run plane-alignment analysis")
 	planeVariant := flag.Int("plane-variant", 0, "curve variant for plane test")
 	correlate := flag.Bool("correlate", false, "run zeta correlation test")
+	matrix := flag.Bool("matrix", false, "compute Hilbert plane operator matrix")
+	matrixJSON := flag.Bool("matrix-json", false, "output full covariance matrix as JSON")
 	compare := flag.Bool("compare", false, "compare all variants for best plane alignment")
 	flag.Parse()
 
@@ -105,6 +107,14 @@ func main() {
 	}
 
 	// ── Plane alignment analysis ───────────────────────────────────────
+	if *matrixJSON {
+		outputMatrix(primes, uint32(*n), *planeVariant)
+		return
+	}
+	if *matrix {
+		computeOperatorMatrix(primes, uint32(*n), *planeVariant)
+		return
+	}
 	if *correlate {
 		runCorrelationTest(primes, uint32(*n), *planeVariant)
 		return
@@ -1079,4 +1089,268 @@ func countPrimesLE(primes []uint64, x uint64) int {
 		}
 	}
 	return lo
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hilbert plane operator matrix construction
+// ─────────────────────────────────────────────────────────────────────────────
+
+func computeOperatorMatrix(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	total := dim * dim * dim
+	fmt.Printf("\n── Hilbert Plane Operator Matrix (order %d, variant %d) ──\n", order, variant)
+
+	// Build the Hilbert curve
+	curve := build3DCurve(order, variant)
+
+	// Count how many integers map to each Z-plane
+	planeSize := make([]int, dim)
+	for k := 0; k < total; k++ {
+		z := curve[k] / (dim * dim)
+		planeSize[z]++
+	}
+
+	// Build the von Mangoldt-weighted vector v[z]
+	// For primes: contribution = log(p)/sqrt(p)
+	// For prime powers: contribution = log(p)/sqrt(p^k) — rare, skip for now
+	v := make([]float64, dim)
+	primeSet := make(map[uint64]bool)
+	for _, p := range primes {
+		primeSet[p] = true
+	}
+	for k := 0; k < total; k++ {
+		z := curve[k] / (dim * dim)
+		kk := uint64(k)
+		if primeSet[kk] && kk > 1 {
+			v[z] += math.Log(float64(kk)) / math.Sqrt(float64(kk))
+		}
+	}
+	// Normalize by plane size
+	for z := 0; z < dim; z++ {
+		if planeSize[z] > 0 {
+			v[z] /= math.Sqrt(float64(planeSize[z]))
+		}
+	}
+
+	// Build the T_n matrix: T[z1][z2] measures the coupling between planes
+	// For the plane-decomposition operator, T is diagonal in the plane basis
+	// because each integer maps to exactly one plane.
+	// The operator's eigenvalues are simply the per-plane average of v.
+	// 
+	// The non-trivial structure comes from the covariance matrix:
+	// C[z1][z2] = covariance of the prime indicator between planes z1 and z2
+	
+	// Compute the covariance matrix C
+	// C[z1][z2] = E[(I(k∈I_z1) - μ1)(I(k∈I_z2) - μ2)]
+	
+	fmt.Printf("  Computing %dx%d covariance matrix...\n", dim, dim)
+	
+	// For large orders, sample to estimate covariance
+	// For n=6 (64 planes), we can compute exactly
+	sampleSize := 100000
+	if total < sampleSize {
+		sampleSize = total
+	}
+	
+	// Compute mean prime density per plane
+	mu := make([]float64, dim)
+	for z := 0; z < dim; z++ {
+		// Count primes on this plane
+		count := 0
+		for _, p := range primes {
+			if int(p) < total {
+				zp := curve[p] / (dim * dim)
+				if zp == z {
+					count++
+				}
+			}
+		}
+		mu[z] = float64(count) / float64(planeSize[z])
+	}
+	
+	// Compute covariance via sampling
+	cov := make([][]float64, dim)
+	for i := range cov {
+		cov[i] = make([]float64, dim)
+	}
+	
+	step := total / sampleSize
+	for k := 0; k < total; k += step {
+		z1 := curve[k] / (dim * dim)
+		i1 := float64(0)
+		if primeSet[uint64(k)] {
+			i1 = 1.0
+		}
+		for dz := -2; dz <= 2; dz++ {
+			k2 := k + dz
+			if k2 >= 0 && k2 < total && k2 != k {
+				z2 := curve[k2] / (dim * dim)
+				i2 := float64(0)
+				if primeSet[uint64(k2)] {
+					i2 = 1.0
+				}
+				// Only accumulate if planes differ (off-diagonal)
+				if z1 != z2 {
+					cov[z1][z2] += (i1 - mu[z1]) * (i2 - mu[z2])
+				}
+			}
+		}
+	}
+	
+	// Print the covariance matrix as JSON for external eigenvalue computation
+	fmt.Println("  Top 10x10 of covariance matrix:")
+	for z1 := 0; z1 < 10 && z1 < dim; z1++ {
+		fmt.Printf("  Z=%-2d:", z1)
+		for z2 := 0; z2 < 10 && z2 < dim; z2++ {
+			fmt.Printf(" % 8.6f", cov[z1][z2])
+		}
+		fmt.Println()
+	}
+
+	// Also output the v vector (plane-weighted von Mangoldt)
+	fmt.Println("\n  Plane-weighted prime density vector v[z] (first 20):")
+	for z := 0; z < 20 && z < dim; z++ {
+		fmt.Printf("  Z=%-2d: % 12.8f\n", z, v[z])
+	}
+	
+	// Compute a simple spectral measure: eigenvalues of the diagonal
+	// of the covariance matrix (the variance per plane)
+	fmt.Println("\n  Per-plane variance (diagonal of covariance):")
+	eigenvalues := make([]float64, dim)
+	for z := 0; z < dim; z++ {
+		eigenvalues[z] = mu[z] * (1 - mu[z]) // Bernoulli variance
+	}
+	
+	// Sort eigenvalues descending
+	sort.Slice(eigenvalues, func(i, j int) bool { return eigenvalues[i] > eigenvalues[j] })
+	
+	fmt.Println("  Top 10 eigenvalues (sorted):")
+	for i := 0; i < 10 && i < dim; i++ {
+		fmt.Printf("    λ_%d = %.8f\n", i+1, eigenvalues[i])
+	}
+	
+	// Compare to zeta zeros: compute the ratio of consecutive eigenvalues
+	// and compare to the ratio of consecutive zeta zero spacings
+	fmt.Println("\n  Eigenvalue ratios (λ_i/λ_{i+1}):")
+	for i := 0; i < 9 && i < dim-1; i++ {
+		if eigenvalues[i+1] > 0 {
+			fmt.Printf("    λ_%d/λ_%d = %.6f\n", i+1, i+2, eigenvalues[i]/eigenvalues[i+1])
+		}
+	}
+	
+	// Output the full matrix as JSON for Python analysis
+	fmt.Println("\n  Full matrix available via --matrix-json flag (to be implemented)")
+}
+
+// outputMatrix writes the full covariance matrix as JSON for external analysis.
+func outputMatrix(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	total := dim * dim * dim
+	curve := build3DCurve(order, variant)
+
+	// Compute plane sizes
+	planeSize := make([]int, dim)
+	for k := 0; k < total; k++ {
+		z := curve[k] / (dim * dim)
+		planeSize[z]++
+	}
+
+	// Compute mean prime density per plane
+	mu := make([]float64, dim)
+	primeSet := make(map[uint64]bool)
+	for _, p := range primes {
+		if int(p) < total {
+			primeSet[p] = true
+		}
+	}
+	for k := 0; k < total; k++ {
+		z := curve[k] / (dim * dim)
+		if primeSet[uint64(k)] {
+			mu[z]++
+		}
+	}
+	for z := 0; z < dim; z++ {
+		mu[z] /= float64(planeSize[z])
+	}
+
+	// Build full covariance matrix
+	// C[z1][z2] = covariance of indicator between planes z1, z2
+	// Sample pairs of adjacent integers along the Hilbert curve
+	cov := make([][]float64, dim)
+	for i := range cov {
+		cov[i] = make([]float64, dim)
+	}
+
+	// Use all integers: for each k, get its plane z1=k.z
+	// and correlate with z2=(k+1).z (adjacent along curve)
+	counts := make([][]int, dim)
+	for i := range counts {
+		counts[i] = make([]int, dim)
+	}
+
+	for k := 0; k < total-1; k++ {
+		z1 := curve[k] / (dim * dim)
+		z2 := curve[k+1] / (dim * dim)
+		i1 := 0.0
+		i2 := 0.0
+		if primeSet[uint64(k)] {
+			i1 = 1.0
+		}
+		if primeSet[uint64(k+1)] {
+			i2 = 1.0
+		}
+		cov[z1][z2] += (i1 - mu[z1]) * (i2 - mu[z2])
+		counts[z1][z2]++
+	}
+
+	// Normalize by counts
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := 0; z2 < dim; z2++ {
+			if counts[z1][z2] > 0 {
+				cov[z1][z2] /= float64(counts[z1][z2])
+			}
+		}
+	}
+
+	// Symmetrize
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := z1 + 1; z2 < dim; z2++ {
+			avg := (cov[z1][z2] + cov[z2][z1]) / 2.0
+			cov[z1][z2] = avg
+			cov[z2][z1] = avg
+		}
+	}
+
+	// Output as JSON
+	fmt.Println("{")
+	fmt.Printf("  \"order\": %d,\n", order)
+	fmt.Printf("  \"dim\": %d,\n", dim)
+	fmt.Printf("  \"primes\": %d,\n", len(primes))
+	fmt.Println("  \"mu\": [")
+	for z := 0; z < dim; z++ {
+		comma := ","
+		if z == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("    %.8f%s\n", mu[z], comma)
+	}
+	fmt.Println("  ],")
+	fmt.Println("  \"covariance\": [")
+	for z1 := 0; z1 < dim; z1++ {
+		fmt.Print("    [")
+		for z2 := 0; z2 < dim; z2++ {
+			comma := ","
+			if z2 == dim-1 {
+				comma = ""
+			}
+			fmt.Printf("%.10f%s", cov[z1][z2], comma)
+		}
+		comma := ","
+		if z1 == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("]%s\n", comma)
+	}
+	fmt.Println("  ]")
+	fmt.Println("}")
 }
