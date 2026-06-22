@@ -240,7 +240,8 @@ static void walk_dir(const char *dirpath) {
         char full[4096];
         snprintf(full, sizeof(full), "%s/%s", dirpath, ent->d_name);
         struct stat st;
-        if (stat(full, &st) != 0) continue;
+        if (lstat(full, &st) != 0) continue;
+        if (S_ISLNK(st.st_mode)) continue;  /* skip symlinks */
         if (S_ISDIR(st.st_mode)) {
             walk_dir(full);
         } else if (S_ISREG(st.st_mode)) {
@@ -294,8 +295,12 @@ int main(int argc, char **argv) {
     if (njobs < 1) njobs = 1;
 
     struct stat st;
-    if (stat(target, &st) != 0) {
+    if (lstat(target, &st) != 0) {
         fprintf(stderr, "error: cannot stat %s\n", target);
+        return 1;
+    }
+    if (S_ISLNK(st.st_mode)) {
+        fprintf(stderr, "error: refusing to fingerprint symlink %s\n", target);
         return 1;
     }
 
