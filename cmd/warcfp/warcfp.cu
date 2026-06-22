@@ -353,11 +353,13 @@ static int parse_warc_record(const uint8_t *buf, int len,
                !(buf[total] == '\r' && buf[total+1] == '\n' &&
                  buf[total+2] == 'W' && buf[total+3] == 'A'))
             total++;
+        *body_out = NULL; *body_len = 0;  /* prevent stale reuse */
         return total > 0 ? total : len;
     }
 
     if (url_out[0] == '\0') {
         /* No URL found — skip */
+        *body_out = NULL; *body_len = 0;
         return header_end + 4;
     }
 

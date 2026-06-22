@@ -268,6 +268,7 @@ static int parse_warc(const uint8_t *buf, int len, char *url, int usz,
     if (strcasecmp(wtype, "response") != 0 || url[0]=='\0') {
         int cl = clstr[0] ? atoi(clstr) : 0;
         int total = he + 4 + cl;
+        *body = NULL; *blen = 0;  /* prevent caller from reusing stale body */
         return total > 0 ? total : len;
     }
     int cl = clstr[0] ? atoi(clstr) : 0;
