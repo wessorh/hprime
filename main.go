@@ -43,6 +43,7 @@ func main() {
 	matrixJSON := flag.Bool("matrix-json", false, "output full covariance matrix as JSON")
 	op := flag.Bool("operator", false, "compute explicit formula operator and spectral response")
 	vm := flag.Bool("vm", false, "output von Mangoldt-weighted covariance matrix as JSON")
+	fastVM := flag.Bool("fast-vm", false, "optimized von Mangoldt operator (fast)")
 	compare := flag.Bool("compare", false, "compare all variants for best plane alignment")
 	flag.Parse()
 
@@ -109,6 +110,10 @@ func main() {
 	}
 
 	// ── Plane alignment analysis ───────────────────────────────────────
+	if *fastVM {
+		computeFastVM(primes, uint32(*n), *planeVariant)
+		return
+	}
 	if *vm {
 		computeVonMangoldtOperator(primes, uint32(*n), *planeVariant)
 		return
@@ -1675,4 +1680,169 @@ func vonMangoldtWeight(k uint64, primeSet map[uint64]bool) float64 {
 	}
 	lambda := vonMangoldt(k, primeSet)
 	return (lambda - 1.0) / math.Sqrt(float64(k))
+}
+
+// computeFastVM is an optimized von Mangoldt operator that pre-computes
+// prime powers and processes only those, avoiding O(√k) checks per integer.
+func computeFastVM(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	total := dim * dim * dim
+	fmt.Printf("\n── Fast Von Mangoldt Operator (order %d, %dx%d) ──\n", order, dim, dim)
+
+	// Build prime set
+	primeSet := make(map[uint64]bool)
+	maxPrime := uint64(0)
+	for _, p := range primes {
+		primeSet[p] = true
+		if p > maxPrime {
+			maxPrime = p
+		}
+	}
+
+	// Pre-compute prime powers with their Λ values
+	// Λ(p^m) = log(p)
+	type primePower struct {
+		k      uint64
+		lambda float64
+	}
+	var ppList []primePower
+	for _, p := range primes {
+		if p < 2 {
+			continue
+		}
+		logP := math.Log(float64(p))
+		// p^1
+		if p < uint64(total) {
+			ppList = append(ppList, primePower{p, logP})
+		}
+		// p^2, p^3, ...
+		for pk := p * p; pk < uint64(total) && pk > 0; pk *= p {
+			ppList = append(ppList, primePower{pk, logP})
+		}
+	}
+	fmt.Printf("  Pre-computed %d prime powers (primes: %d)\n", len(ppList), len(primes))
+
+	// Build Λ(k) lookup
+	lambdaMap := make(map[uint64]float64, len(ppList))
+	for _, pp := range ppList {
+		lambdaMap[pp.k] = pp.lambda
+	}
+
+	// Build Hilbert curve
+	curve := build3DCurve(order, variant)
+
+	// Compute plane sizes and the von Mangoldt projection
+	planeSize := make([]int, dim)
+	mu := make([]float64, dim) // mean weight per plane
+
+	// First pass: accumulate Λ(k)/√k per plane and count
+	for k := 0; k < total; k++ {
+		z := curve[k] / (dim * dim)
+		planeSize[z]++
+		kk := uint64(k)
+		if kk < 2 {
+			continue
+		}
+		if lambda, ok := lambdaMap[kk]; ok {
+			mu[z] += (lambda - 1.0) / math.Sqrt(float64(kk))
+		} else {
+			mu[z] += -1.0 / math.Sqrt(float64(kk))
+		}
+	}
+	for z := 0; z < dim; z++ {
+		if planeSize[z] > 0 {
+			mu[z] /= math.Sqrt(float64(planeSize[z]))
+		}
+	}
+
+	// Build covariance matrix using adjacent pairs along curve
+	cov := make([][]float64, dim)
+	for i := range cov {
+		cov[i] = make([]float64, dim)
+	}
+	counts := make([][]int, dim)
+	for i := range counts {
+		counts[i] = make([]int, dim)
+	}
+
+	// Use all adjacent pairs
+	for k := 0; k < total-1; k++ {
+		z1 := curve[k] / (dim * dim)
+		z2 := curve[k+1] / (dim * dim)
+		kk1, kk2 := uint64(k), uint64(k+1)
+
+		w1 := -1.0
+		w2 := -1.0
+		if kk1 >= 2 {
+			if lambda, ok := lambdaMap[kk1]; ok {
+				w1 = (lambda - 1.0) / math.Sqrt(float64(kk1))
+			} else {
+				w1 = -1.0 / math.Sqrt(float64(kk1))
+			}
+		} else {
+			w1 = -1.0 / math.Sqrt(2.0)
+		}
+		if kk2 >= 2 {
+			if lambda, ok := lambdaMap[kk2]; ok {
+				w2 = (lambda - 1.0) / math.Sqrt(float64(kk2))
+			} else {
+				w2 = -1.0 / math.Sqrt(float64(kk2))
+			}
+		} else {
+			w2 = -1.0 / math.Sqrt(2.0)
+		}
+
+		cov[z1][z2] += (w1 - mu[z1]) * (w2 - mu[z2])
+		counts[z1][z2]++
+	}
+
+	// Normalize and symmetrize
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := 0; z2 < dim; z2++ {
+			if counts[z1][z2] > 0 {
+				cov[z1][z2] /= float64(counts[z1][z2])
+			}
+		}
+	}
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := z1 + 1; z2 < dim; z2++ {
+			avg := (cov[z1][z2] + cov[z2][z1]) / 2.0
+			cov[z1][z2] = avg
+			cov[z2][z1] = avg
+		}
+	}
+
+	// JSON output
+	fmt.Println("{")
+	fmt.Printf("  \"order\": %d,\n", order)
+	fmt.Printf("  \"dim\": %d,\n", dim)
+	fmt.Printf("  \"primes\": %d,\n", len(primes))
+	fmt.Printf("  \"weight\": \"von_mangoldt_fast\",\n")
+	fmt.Println("  \"mu\": [")
+	for z := 0; z < dim; z++ {
+		comma := ","
+		if z == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("    %.12f%s\n", mu[z], comma)
+	}
+	fmt.Println("  ],")
+	fmt.Println("  \"covariance\": [")
+	for z1 := 0; z1 < dim; z1++ {
+		fmt.Print("    [")
+		for z2 := 0; z2 < dim; z2++ {
+			comma := ","
+			if z2 == dim-1 {
+				comma = ""
+			}
+			fmt.Printf("%.12f%s", cov[z1][z2], comma)
+		}
+		comma := ","
+		if z1 == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("]%s\n", comma)
+	}
+	fmt.Println("  ]")
+	fmt.Println("}")
 }
