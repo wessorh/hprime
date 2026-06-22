@@ -44,6 +44,7 @@ func main() {
 	op := flag.Bool("operator", false, "compute explicit formula operator and spectral response")
 	vm := flag.Bool("vm", false, "output von Mangoldt-weighted covariance matrix as JSON")
 	fastVM := flag.Bool("fast-vm", false, "optimized von Mangoldt operator (fast)")
+	stream := flag.Bool("stream", false, "streaming matrix builder (for order 11+)")
 	compare := flag.Bool("compare", false, "compare all variants for best plane alignment")
 	flag.Parse()
 
@@ -110,6 +111,10 @@ func main() {
 	}
 
 	// ── Plane alignment analysis ───────────────────────────────────────
+	if *stream {
+		outputMatrixStreaming(primes, uint32(*n), *planeVariant)
+		return
+	}
 	if *fastVM {
 		computeFastVM(primes, uint32(*n), *planeVariant)
 		return
@@ -1825,6 +1830,131 @@ func computeFastVM(primes []uint64, order uint32, variant int) {
 			comma = ""
 		}
 		fmt.Printf("    %.12f%s\n", mu[z], comma)
+	}
+	fmt.Println("  ],")
+	fmt.Println("  \"covariance\": [")
+	for z1 := 0; z1 < dim; z1++ {
+		fmt.Print("    [")
+		for z2 := 0; z2 < dim; z2++ {
+			comma := ","
+			if z2 == dim-1 {
+				comma = ""
+			}
+			fmt.Printf("%.12f%s", cov[z1][z2], comma)
+		}
+		comma := ","
+		if z1 == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("]%s\n", comma)
+	}
+	fmt.Println("  ]")
+	fmt.Println("}")
+}
+
+// outputMatrixStreaming builds the covariance matrix without storing
+// the full Hilbert curve in memory.  For each adjacent pair (k, k+1),
+// it computes d2xyz3D on-the-fly.  This enables orders 11+ on CPU.
+func outputMatrixStreaming(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	total := uint64(1) << (3 * order) // 8^order
+	fmt.Fprintf(os.Stderr, "Streaming order %d: %dx%d, %d primes, %.1fB cells\n",
+		order, dim, dim, len(primes), float64(total))
+
+	// Build prime set as a bitset for O(1) lookup
+	bitset := make([]uint64, (total+63)/64)
+	for _, p := range primes {
+		if p < total {
+			bitset[p/64] |= 1 << (p % 64)
+		}
+	}
+	isPrime := func(k uint64) bool {
+		return bitset[k/64]&(1<<(k%64)) != 0
+	}
+
+	// Compute plane sizes and means
+	planeSize := make([]int, dim)
+	mu := make([]float64, dim)
+
+	fmt.Fprintf(os.Stderr, "  Pass 1: computing plane sizes...\n")
+	for k := uint64(0); k < total; k++ {
+		x, y, z := d2xyz3D(order, k, variant)
+		_ = x
+		_ = y
+		planeSize[z]++
+		if isPrime(k) && k > 1 {
+			mu[z]++
+		}
+	}
+	for z := 0; z < dim; z++ {
+		if planeSize[z] > 0 {
+			mu[z] /= float64(planeSize[z])
+		}
+	}
+
+	// Build covariance matrix from adjacent pairs
+	cov := make([][]float64, dim)
+	for i := range cov {
+		cov[i] = make([]float64, dim)
+	}
+	counts := make([][]int, dim)
+	for i := range counts {
+		counts[i] = make([]int, dim)
+	}
+
+	fmt.Fprintf(os.Stderr, "  Pass 2: computing covariance from %d pairs...\n", total-1)
+	progressStep := total / 20
+	for k := uint64(0); k < total-1; k++ {
+		if k%progressStep == 0 {
+			pct := k * 100 / total
+			fmt.Fprintf(os.Stderr, "    %d%%\n", pct)
+		}
+		_, _, z1 := d2xyz3D(order, k, variant)
+		_, _, z2 := d2xyz3D(order, k+1, variant)
+
+		i1 := 0.0
+		i2 := 0.0
+		if isPrime(k) {
+			i1 = 1.0
+		}
+		if isPrime(k+1) {
+			i2 = 1.0
+		}
+
+		cov[z1][z2] += (i1 - mu[z1]) * (i2 - mu[z2])
+		counts[z1][z2]++
+	}
+
+	// Normalize
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := 0; z2 < dim; z2++ {
+			if counts[z1][z2] > 0 {
+				cov[z1][z2] /= float64(counts[z1][z2])
+			}
+		}
+	}
+
+	// Symmetrize
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := z1 + 1; z2 < dim; z2++ {
+			avg := (cov[z1][z2] + cov[z2][z1]) / 2.0
+			cov[z1][z2] = avg
+			cov[z2][z1] = avg
+		}
+	}
+
+	// JSON output
+	fmt.Println("{")
+	fmt.Printf("  \"order\": %d,\n", order)
+	fmt.Printf("  \"dim\": %d,\n", dim)
+	fmt.Printf("  \"primes\": %d,\n", len(primes))
+	fmt.Println("  \"mu\": [")
+	for z := 0; z < dim; z++ {
+		comma := ","
+		if z == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("    %.10f%s\n", mu[z], comma)
 	}
 	fmt.Println("  ],")
 	fmt.Println("  \"covariance\": [")
