@@ -1,0 +1,213 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{Why the 3D Hilbert Curve Cannot Prove the Riemann Hypothesis\\
+--- A Final Assessment}
+\author{Rick Wesson\\
+Support Intelligence, Inc.}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+After 11 Hilbert orders, 6 fundamental curve constructions, 2 independent
+operator formulations, 4D comparative analysis, 30,000 permutation tests,
+and exhaustive optimization over the 3D Hilbert construction space, we
+conclude that the 3D Hilbert plane operator cannot prove the Riemann
+Hypothesis.  The eigenvalue spectrum correlates with zeta zeros at
+$r \approx -0.80$, but the eigenvalues are not the zeros.  The gap
+between correlation and identity cannot be closed at computationally
+accessible orders, and there is no evidence that it closes in the limit.
+This paper explains exactly why, and what would be required for any
+geometric approach to succeed where this one did not.
+\end{abstract}
+
+\section{What We Found}
+
+The investigation established three robust phenomena:
+
+\begin{enumerate}
+\item \textbf{Plane-density anomaly:} Primes are not uniformly distributed
+   across Z-planes of the 3D Hilbert curve.  The density variation grows
+   as $2^{n/2}$, reaching $|z| = 55.7$ at order 10 ($p < 10^{-200}$).
+
+\item \textbf{PNT error alignment:} 98\% of planes with anomalous prime
+   density sample integer ranges where $\pi(x) > \text{li}(x)$ -- the
+   explicit formula's oscillatory term is systematically positive.
+
+\item \textbf{Spectral correlation:} Eigenvalues of the Hilbert plane
+   covariance operator correlate with zeta zeros at $r \approx -0.80$
+   across six orders and two operator constructions ($p < 10^{-4}$,
+   30,000 permutation tests).
+\end{enumerate}
+
+These are genuine mathematical discoveries.  The 3D Hilbert curve encodes
+structural information about prime distribution that is statistically
+indistinguishable from the zeta function's spectral content at the
+correlation level.
+
+\section{Why This Cannot Prove RH}
+
+Despite the strength of the correlations, five fundamental gaps prevent
+this approach from constituting a proof of the Riemann Hypothesis.
+
+\subsection{1. Correlation Is Not Identity}
+
+The eigenvalues of the Hilbert plane operator \emph{correlate with} the
+zeta zeros at $r \approx -0.80$.  They are not \emph{equal to} the zeta
+zeros.  The mean absolute deviation between the normalized eigenvalue
+spectrum and the normalized zeta zero spectrum is stable at $\approx 0.28$
+across orders 6--11, showing no statistically significant convergence
+toward zero.
+
+A correlation of $r = -0.80$ means the eigenvalues are in approximately
+the correct \emph{order}, but their precise values differ from the zeta
+zeros by $\sim 28\%$ of the spectral range.  For the Hilbert-P\'{o}lya
+conjecture to be realized, the eigenvalues must \emph{equal} the zeta
+zeros exactly, not merely correlate with them.
+
+The temperature in London correlates with the temperature in New York at
+$r \approx 0.7$, but that does not make London's thermometer a measurement
+of New York's weather.  Correlation, no matter how statistically
+significant, does not establish identity.
+
+\subsection{2. Wrong Spectral Universality Class}
+
+The eigenvalue pair correlation function is anti-GUE ($r_{\text{GUE}} =
+-0.84$): the eigenvalues exhibit \emph{clustering} rather than the
+\emph{level repulsion} characteristic of zeta zeros.  Montgomery's pair
+correlation conjecture -- one of the most thoroughly verified predictions
+in analytic number theory -- states that zeta zero spacings follow the
+GUE distribution.  The Hilbert plane operator's eigenvalues follow the
+opposite pattern.
+
+This is not a minor discrepancy.  The GUE property of zeta zeros is
+believed to be a universal signature of quantum chaotic systems.  An
+operator whose spectrum is anti-GUE belongs to a fundamentally different
+dynamical class -- an integrable or quasi-integrable system rather than
+a chaotic one.  If the zeta zeros are eigenvalues of a quantum chaotic
+Hamiltonian (as the GUE statistics suggest), the Hilbert plane operator
+cannot be that Hamiltonian.
+
+\subsection{3. No Convergence in Accessible Regime}
+
+The scaling analysis (Section 5.3 of Paper IV) shows that the eigenvalue
+error relative to zeta zeros converges at a rate of approximately $-0.07$
+per order.  At this rate, order $\approx 475$ would be required for 1\%
+accuracy -- a matrix of size $2^{475} \times 2^{475}$, requiring more
+memory than there are atoms in the observable universe.
+
+The physical universe imposes a hard limit on computational verification.
+If convergence to the zeta zeros requires orders that cannot be realized
+in this universe, then the conjecture cannot be verified computationally.
+And if it cannot be verified, it cannot serve as the basis for a proof
+that relies on computational evidence.
+
+\subsection{4. The Operator Is Not the Right One}
+
+The Hilbert plane operator $T_n$ is a covariance matrix constructed from
+adjacent integer pairs along the Hilbert curve.  It measures
+\emph{correlations between planes}, not the \emph{action of an operator
+on arithmetic functions}.  The true Hilbert--P\'{o}lya operator $\hat{H}$
+would satisfy:
+
+\begin{equation}
+\hat{H} \phi_k = \gamma_k \phi_k
+\end{equation}
+
+where $\phi_k$ are eigenfunctions and $\gamma_k$ are the zeta zeros.
+The Hilbert plane operator does not have this property for any known
+set of $\phi_k$.  Its eigenvalues are the wrong values (MAD $\approx
+0.28$), and its eigenvectors are the wrong objects (plane indicator
+functions rather than arithmetic wavefunctions).
+
+The fact that the eigenvalues correlate with the zeta zeros means the
+operator is \emph{related to} $\hat{H}$, not that it \emph{is} $\hat{H}$.
+
+\subsection{5. The Gap Is Analytic, Not Computational}
+
+The most fundamental obstacle is that the zeta zeros are defined
+analytically -- as the roots of a complex function continued to the
+entire complex plane -- while the Hilbert plane operator is defined
+combinatorially -- as a finite-dimensional matrix built from a
+discrete geometric construction.
+
+Bridging this gap requires showing that the combinatorial construction
+converges to the analytic one in the limit $n \to \infty$.  This is
+an analytic continuation problem, not a computational one.  No amount
+of computational evidence at finite $n$ can substitute for a proof of
+convergence in the limit.
+
+The situation is analogous to approximating $\pi$ by the perimeter of
+an inscribed $2^n$-gon.  At $n=10$, the approximation is good to several
+decimal places.  But you cannot \emph{prove} that the limit is $\pi$
+without an analytic argument -- the computational evidence is suggestive
+but not dispositive.
+
+\section{What Would Be Required}
+
+For any geometric construction to prove the Riemann Hypothesis via the
+Hilbert--P\'{o}lya pathway, it must satisfy four criteria:
+
+\begin{enumerate}
+\item \textbf{Exact eigenvalue match:} The eigenvalues must equal the
+   zeta zeros, not merely correlate with them.  MAD must converge to 0.
+
+\item \textbf{GUE spacing statistics:} The eigenvalue pair correlation
+   function must match GUE at all accessible orders, not anti-GUE.
+
+\item \textbf{Proven self-adjointness:} The infinite-order limit must be
+   proven self-adjoint by analytic argument, not computational evidence.
+
+\item \textbf{Analytic convergence proof:} The finite-order approximations
+   must be proven to converge to the limit, with error bounds that vanish
+   as $n \to \infty$.
+\end{enumerate}
+
+The 3D Hilbert plane operator satisfies none of these criteria.  It
+achieves the first criterion partially (correlation but not identity),
+fails the second (anti-GUE), and has no proof for the third or fourth.
+
+\section{What This Work Contributes Despite Not Proving RH}
+
+The investigation was not a failure.  It established:
+
+\begin{itemize}
+\item The first computationally accessible operator whose spectrum
+   correlates with zeta zeros at statistically overwhelming significance.
+
+\item A new geometric probe of prime distribution -- the 3D Hilbert
+   curve's plane decomposition -- that reveals structural biases
+   invisible to other methods.
+
+\item The specificity of the 3D case: the correlation is unique to 3D
+   (4D weakens with order) and bounded across curve constructions,
+   suggesting a genuine mathematical structure rather than an artifact.
+
+\item A clear negative result: exhaustive optimization over the 3D
+   Hilbert construction space cannot close the gap to identity.
+
+\item A set of criteria that any future geometric approach must satisfy
+   to succeed where this one fell short.
+\end{itemize}
+
+In science, knowing what doesn't work is often as valuable as knowing
+what does.  The 3D Hilbert curve will not prove the Riemann Hypothesis.
+But the tools, methods, and structural insights developed here may
+enable someone else to find the construction that will.
+
+\section{Acknowledgments}
+
+All code, data, and computational results are available in the companion
+repository.  Every numerical claim can be independently reproduced.  The
+author thanks the open-source mathematical community for tools including
+NumPy, SciPy, and the AMD EPYC 7H12 server on which these computations
+were performed.
+
+\end{document}
