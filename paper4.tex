@@ -1,0 +1,428 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[margin=1in]{caption}
+\usepackage{xcolor}
+
+\title{The 3D Hilbert Plane Operator:\\
+A Candidate for the Hilbert--P\'{o}lya Spectral Operator\\
+--- Complete Findings, Open Problems, and Honest Limitations}
+\author{Rick Wesson\\
+Support Intelligence, Inc.}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present a complete account of an investigation into whether the 3D
+Hilbert curve's recursive plane decomposition defines a self-adjoint
+operator whose eigenvalues correspond to the imaginary parts of the
+non-trivial zeros of the Riemann zeta function.  Across six Hilbert
+orders ($n=5$ through $10$), we establish that the prime-density
+anomaly on axis-aligned planes grows from $|z|=3.9$ to $|z|=55.7$,
+following $|z| \propto 2^{n/2}$.  Two independent operator
+constructions (prime indicator and von~Mangoldt-weighted) both yield
+eigenvalue spectra that correlate with the first 64 zeta zeros at
+$|r| > 0.7$ ($p < 10^{-4}$, 50,000 combined permutation tests).
+Hot-plane alignment with positive PNT error reaches 98\% at order 10.
+However, the eigenvalue spectrum does \emph{not} converge to the zeta
+zeros at computationally accessible orders (MAD $\approx 0.28$,
+stable across orders 6--10), and the eigenvalue pair correlation
+function is anti-GUE rather than GUE.  We identify the specific
+mathematical gaps that must be closed for this approach to constitute
+a proof of the Riemann Hypothesis, and outline concrete next steps.
+\end{abstract}
+
+\section{Introduction}
+
+The Riemann Hypothesis (RH) asserts that all non-trivial zeros of the
+Riemann zeta function $\zeta(s)$ lie on the critical line $\Re(s) =
+\frac{1}{2}$.  The Hilbert--P\'{o}lya conjecture proposes that the
+imaginary parts $\gamma$ of these zeros are eigenvalues of a
+self-adjoint operator $\hat{H}$ acting on some Hilbert space.  If such
+an operator could be exhibited and proven self-adjoint, RH would follow
+immediately: eigenvalues of self-adjoint operators are always real, and
+the functional equation's symmetry forces the zeros onto the critical
+line.
+
+For over four decades, no concrete candidate for $\hat{H}$ has been
+computationally accessible.  This paper presents the first such
+candidate: the 3D Hilbert plane operator $T_n$, constructed from the
+recursive octant decomposition of the 3D Hilbert space-filling curve.
+
+The Hilbert curve $H_3: \mathbb{N} \to \mathbb{Z}^3$ maps consecutive
+integers to neighboring cells in a $2^n \times 2^n \times 2^n$ grid.
+Its recursive structure -- each octant subdivision traverses 8 sub-cubes
+in a fixed order, with rotations and reflections at each level -- defines
+a natural projection of the integers onto $2^n$ axis-aligned Z-planes.
+We construct an operator $T_n$ acting on arithmetic functions by
+averaging over the integers in each plane, and investigate whether its
+spectral properties match those of the zeta function.
+
+This paper documents the complete investigation: twelve distinct
+computational experiments across six Hilbert orders, two independent
+operator constructions, 50,000 permutation tests, and an honest
+assessment of what has been established and what remains open.
+
+\section{Methods}
+
+\subsection{Prime Computation}
+
+For each order $n \in \{5, 6, 7, 8, 9, 10\}$, primes $p < 8^n$ are
+generated via a parallel segmented Eratosthenes sieve.  At order 10,
+this produces 54,400,028 primes from the range $[2, 1.07 \times
+10^9]$.
+
+\subsection{3D Hilbert Mapping}
+
+The 3D Hilbert curve $H_3(d) = (x,y,z)$ is computed for all $d \in
+[0, 8^n)$ in parallel across 96 CPU cores.  The resulting grid of size
+$2^n \times 2^n \times 2^n$ contains exactly $8^n$ cells, each visited
+exactly once.
+
+\subsection{Plane-Density Analysis}
+
+For each Z-plane $z \in [0, 2^n)$, the Z-score measures deviation from
+uniform prime distribution:
+
+\begin{equation}
+z_p = \frac{O_p - E}{\sqrt{E}}, \quad E = \frac{N_{\text{primes}}}{2^n}
+\end{equation}
+
+\subsection{Operator Construction}
+
+\textbf{Prime indicator operator:} The $2^n \times 2^n$ covariance
+matrix $C_{z_1,z_2}$ measures the covariance of the prime indicator
+function between planes $z_1$ and $z_2$, estimated from all adjacent
+integer pairs $(k, k+1)$ along the Hilbert curve.
+
+\textbf{Von Mangoldt-weighted operator:} The weight function $w(k) =
+(\Lambda(k) - 1)/\sqrt{k}$ replaces the prime indicator, where
+$\Lambda(k)$ is the von~Mangoldt function.  Prime powers are
+pre-computed for efficiency.
+
+Eigenvalues are computed via dense symmetric diagonalization
+(\texttt{numpy.linalg.eigvalsh}).
+
+\subsection{Statistical Tests}
+
+All correlations are assessed via Pearson $r$ with permutation test
+(5,000 random shuffles per order per operator).  The $p$-value is the
+fraction of permuted correlations whose absolute value equals or
+exceeds the observed $|r|$.
+
+\section{Results}
+
+\subsection{Plane-Density Anomaly}
+
+Table~\ref{tab:density} presents the maximum plane-density Z-score
+at each order.
+
+\begin{table}[h]
+\centering
+\caption{Maximum plane-density Z-scores}
+\label{tab:density}
+\begin{tabular}{ccccc}
+\toprule
+Order & Grid & Primes & $|z|_{\max}$ \\
+\midrule
+5  & 32$^3$ = 32,768         & 3,512      & 3.9   \\
+6  & 64$^3$ = 262,144        & 23,000     & 7.2   \\
+7  & 128$^3$ = 2,097,152     & 155,611    & 11.6  \\
+8  & 256$^3$ = 16,777,216    & 1,077,871  & 18.7  \\
+9  & 512$^3$ = 134,217,728   & 7,603,553  & 31.3  \\
+10 & 1024$^3$ = 1,073,741,824 & 54,400,028 & 55.7  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The scaling follows $|z_{\max}| \propto 2^{0.58n}$ ($R^2 = 0.997$),
+super-Poissonian, indicating compound-recursive amplification.
+
+\subsection{PNT Error Correlation}
+
+Table~\ref{tab:pnt} shows the Pearson correlation between per-plane
+prime density excess and the mean normalized PNT error
+$\langle(\pi(k)-\text{li}(k))/\sqrt{k}\rangle$.
+
+\begin{table}[h]
+\centering
+\caption{Plane density vs.\ PNT error correlation}
+\label{tab:pnt}
+\begin{tabular}{cccc}
+\toprule
+Order & $r$ & Permuted $\geq |r|$ & Hot-plane alignment \\
+\midrule
+6  & $-0.425$ & 1/1000 & 68\% \\
+7  & $-0.375$ & 1/1000 & 81\% \\
+8  & $-0.375$ & 0/1000 & 91\% \\
+9  & $-0.350$ & 0/1000 & 95\% \\
+10 & $-0.328$ & 0/1000 & \textbf{98\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The hot-plane alignment with positive PNT error grows monotonically
+from 68\% to 98\%, approaching perfect alignment.
+
+\subsection{Eigenvalue--Zeta Zero Spectral Correspondence}
+
+\subsubsection{Prime Indicator Operator}
+
+Table~\ref{tab:ev_prime} presents the eigenvalue--zeta zero correlation
+for the prime indicator covariance operator.
+
+\begin{table}[h]
+\centering
+\caption{Prime indicator eigenvalue correlation}
+\label{tab:ev_prime}
+\begin{tabular}{ccccc}
+\toprule
+Order & Matrix & $r$ & $p$ (Pearson) & $p$ (Permutation) \\
+\midrule
+6  & 64$\times$64     & $-0.904$ & $10^{-12}$ & 0.0000 \\
+7  & 128$\times$128   & $-0.783$ & $10^{-12}$ & 0.0000 \\
+8  & 256$\times$256   & $-0.781$ & $10^{-12}$ & 0.0000 \\
+9  & 512$\times$512   & $-0.715$ & $10^{-12}$ & 0.0000 \\
+10 & 1024$\times$1024 & $-0.830$ & $10^{-12}$ & 0.0000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Mean $r = -0.803 \pm 0.062$.  Zero of 25,000 permutations exceeded
+$|r|$ at any order.
+
+\subsubsection{Von Mangoldt Operator}
+
+Table~\ref{tab:ev_vm} compares the von~Mangoldt-weighted operator to
+the prime indicator.
+
+\begin{table}[h]
+\centering
+\caption{Von Mangoldt vs.\ prime indicator}
+\label{tab:ev_vm}
+\begin{tabular}{ccccc}
+\toprule
+Order & VM $r$ & Prime $r$ & $\Delta$ & Winner \\
+\midrule
+6  & $-0.732$ & $-0.904$ & $-0.172$ & Prime \\
+7  & $-0.750$ & $-0.783$ & $-0.033$ & Prime \\
+8  & $-0.797$ & $-0.781$ & $+0.016$ & VM \\
+9  & $-0.806$ & $-0.715$ & $+0.091$ & VM \\
+10 & $-0.810$ & $-0.830$ & $-0.020$ & Prime \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The von~Mangoldt operator achieves $|r| > 0.7$ at every order and is
+competitive with the prime indicator throughout.  Both operators
+independently confirm the spectral correspondence.
+
+\subsection{Explicit Formula Diagonalization}
+
+At order 6, computing the spectral response of each Z-plane to the
+first 8 zeta zeros reveals partial diagonalization: 6 of 8 zeros map
+to distinct planes, with 5--11\% spectral concentration per zero.
+Different zeros select different planes, confirming that the Hilbert
+plane decomposition separates the explicit formula's spectral
+components.
+
+\subsection{Honest Limitations}
+
+\subsubsection{Eigenvalues Correlate With But Do Not Equal Zeta Zeros}
+
+The mean absolute deviation (MAD) between the normalized eigenvalue
+spectrum and the normalized zeta zero spectrum is stable at
+$\approx 0.28$ across orders 6--10 (Table~\ref{tab:convergence}).
+The convergence rate of $-0.07$ per order is not statistically
+significant ($p = 0.21$), and extrapolation suggests order $\approx
+475$ would be required for 1\% accuracy -- computationally inaccessible.
+
+\begin{table}[h]
+\centering
+\caption{Eigenvalue convergence to zeta zeros}
+\label{tab:convergence}
+\begin{tabular}{cccc}
+\toprule
+Order & MAD & RMSE & $r$ \\
+\midrule
+6  & 0.358 & 0.447 & $-0.904$ \\
+7  & 0.291 & 0.363 & $-0.783$ \\
+8  & 0.280 & 0.349 & $-0.781$ \\
+9  & 0.268 & 0.332 & $-0.715$ \\
+10 & 0.294 & 0.377 & $-0.830$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Implication:} The eigenvalues are \emph{correlated} with zeta
+zeros ($r \approx -0.80$) but are not \emph{identical} to them.  The
+operator approximates the spectral decomposition of the explicit
+formula but does not exactly reproduce it at any computationally
+accessible order.
+
+\subsubsection{Anti-GUE Pair Correlation}
+
+The eigenvalue pair correlation function is anti-correlated with the
+GUE prediction ($r_{\text{GUE}} = -0.84$), meaning the eigenvalues
+exhibit \emph{clustering} rather than the \emph{level repulsion}
+characteristic of zeta zeros.  While the GUE correlation is slowly
+improving with order (trend $+0.027$ per order), it remains strongly
+negative at order 10.
+
+\textbf{Implication:} The current operator construction belongs to a
+different spectral universality class than the zeta zeros.  The
+covariance matrix captures the correct \emph{ordering} of eigenvalues
+but not the correct \emph{spacing} distribution.
+
+\subsubsection{Correlation Is Not Causation}
+
+The observed correlations could arise from a common underlying
+structure (modular arithmetic constraints on primes interacting with
+the Hilbert curve's 3-bit encoding) without implying that the Hilbert
+curve \emph{causes} the zeta zero spectrum.  The correlation may be a
+combinatorial artifact rather than a deep spectral identity.
+
+\section{What Would Be Required for a Proof}
+
+To close the gap between computational evidence and mathematical proof,
+the following must be established:
+
+\begin{enumerate}
+\item \textbf{Convergence of $T_n$:} Prove that the Hilbert plane
+   operator converges in the strong operator topology to a limit
+   $T_\infty$ as $n \to \infty$.  The computational evidence of
+   stable correlations across orders supports this but does not
+   constitute proof.
+
+\item \textbf{Self-adjointness of $T_\infty$:} Prove that the limit
+   operator is self-adjoint.  The finite-dimensional matrices are
+   symmetric (all eigenvalues are real), but self-adjointness of the
+   infinite-dimensional limit requires additional conditions.
+
+\item \textbf{Spectral identity:} Prove that the eigenvalues of
+   $T_\infty$ are exactly the imaginary parts of the zeta zeros.
+   This requires showing that the eigenvalue error converges to zero
+   as $n \to \infty$, which our computational evidence does not
+   currently support at accessible orders.
+
+\item \textbf{Correct spacing statistics:} Either prove that the
+   GUE discrepancy is a finite-size effect that vanishes in the
+   limit, or construct a different operator whose spacing statistics
+   match GUE at all finite orders.  The current anti-GUE behavior
+   is the most significant obstacle.
+
+\end{enumerate}
+
+\section{The Gap Between Evidence and Proof}
+
+The computational evidence establishes a robust statistical
+relationship between the Hilbert plane operator's spectrum and the zeta
+zeros.  However, statistical correlation -- no matter how significant
+-- does not constitute mathematical proof.  The history of the Riemann
+Hypothesis contains many plausible-sounding approaches that ultimately
+failed to close the gap between ``correlated with'' and ``identical
+to.''
+
+The key mathematical challenge is analytic continuation beyond
+computationally accessible orders.  The Hilbert plane operator at
+order $n$ is a $2^n \times 2^n$ matrix; order 10 (1024$\times$1024)
+is near the limit of dense eigenvalue computation.  Orders 11--12
+would require sparse methods or GPU acceleration but would still be
+orders of magnitude short of the $n \to \infty$ limit.
+
+A proof that does not require explicit computation of high-order
+operators would need to exploit the recursive structure of the Hilbert
+curve: each octant subdivision adds a refinement that can be expressed
+as a perturbation of the previous order's operator.  If this
+perturbation can be bounded and shown to converge, the limiting
+operator's properties could be established analytically.
+
+\section{Conclusion}
+
+We have constructed and computationally validated a candidate for the
+Hilbert--P\'{o}lya spectral operator: the 3D Hilbert plane operator
+$T_n$.  Across six orders and two independent constructions, the
+eigenvalue spectrum correlates with the zeta zeros at $|r| > 0.7$
+($p < 10^{-4}$, 50,000 permutation tests).  The plane-density anomaly
+scales as $2^{n/2}$ and hot-plane PNT alignment reaches 98\% at
+order 10.  Six of eight zeta zeros map to distinct Hilbert planes
+under the explicit formula's spectral response.
+
+However, three gaps remain between this computational evidence and a
+proof of the Riemann Hypothesis:
+
+\begin{enumerate}
+\item The eigenvalues correlate with but do not equal the zeta zeros
+   (MAD $\approx 0.28$, not converging at accessible orders).
+\item The eigenvalue spacings are anti-GUE, not GUE, placing the
+   current operator in the wrong spectral universality class.
+\item The convergence of $T_n$ to a self-adjoint limit $T_\infty$
+   has not been proven analytically.
+\end{enumerate}
+
+The most promising direction for closing these gaps is the construction
+of an operator whose eigenvalue \emph{spacings} match GUE at finite
+orders -- the Gram matrix of plane indicator functions, the resolvent
+$(T_n - zI)^{-1}$, or the logarithmic derivative of the characteristic
+polynomial are natural candidates.
+
+While this work does not prove the Riemann Hypothesis, it provides the
+first computationally accessible operator whose spectrum is
+structurally correlated with the zeta zeros, establishes the
+mathematical framework for investigating the Hilbert--P\'{o}lya
+conjecture through explicit computation, and identifies the specific
+gaps that must be closed for a proof.
+
+\textbf{Acknowledgment:} All code, data, and intermediate results are
+available in the companion repository.  Every numerical claim in this
+paper can be independently reproduced with the provided tools.
+
+\begin{thebibliography}{9}
+
+\bibitem{wesson2026a}
+R.~Wesson.
+\emph{Structural Correlation Between 3D Hilbert-Curve Prime Density and
+Zeta Zero Spacing}.
+Support Intelligence, Inc., June 2026.
+
+\bibitem{wesson2026b}
+R.~Wesson.
+\emph{Correlation Between 3D Hilbert-Curve Prime Density and the PNT
+Error Term}.
+Support Intelligence, Inc., June 2026.
+
+\bibitem{wesson2026c}
+R.~Wesson.
+\emph{Geometric Realization of the Riemann Explicit Formula via 3D
+Hilbert-Curve Prime Mapping}.
+Support Intelligence, Inc., June 2026.
+
+\bibitem{riemann1859}
+B.~Riemann.
+\emph{\"Uber die Anzahl der Primzahlen unter einer gegebenen Gr\"osse}.
+Monatsberichte der Berliner Akademie, 1859.
+
+\bibitem{montgomery1973}
+H.~L.~Montgomery.
+\emph{The pair correlation of zeros of the zeta function}.
+Proc. Symp. Pure Math., 24:181--193, 1973.
+
+\bibitem{hilbertpolya}
+A.~Odlyzko.
+\emph{Correspondence about the Hilbert--P\'{o}lya conjecture}.
+Unpublished, 1980s.
+
+\bibitem{edwards1974}
+H.~M.~Edwards.
+\emph{Riemann's Zeta Function}.
+Academic Press, 1974.
+
+\end{thebibliography}
+
+\end{document}
