@@ -232,7 +232,56 @@ Different zeros select different planes, confirming that the Hilbert
 plane decomposition separates the explicit formula's spectral
 components.
 
-\subsection{Honest Limitations}
+
+\subsection{Optimization Over Curve Constructions}
+
+We investigated whether the spectral correspondence could be improved by
+optimizing the 3D Hilbert curve's construction.  A 3D Hilbert curve at
+order $n$ is defined by a base octant traversal pattern (6 fundamental
+choices) combined with per-level rotation symmetries (24 choices per
+recursion level).
+
+Table~\ref{tab:patterns} presents the eigenvalue--zeta zero correlation
+for all 6 fundamental patterns across orders 6--9.
+
+\begin{table}[h]
+\centering
+\caption{Pattern comparison: 6 fundamental 3D Hilbert traversals}
+\label{tab:patterns}
+\begin{tabular}{cccccc}
+\toprule
+Pattern & Octant Order & Order 6 & Order 7 & Order 8 & Order 9 \\
+\midrule
+A & $\{0,1,3,2,6,7,5,4\}$ & $-0.904$ & $-0.783$ & $-0.781$ & --- \\
+B & $\{0,2,6,4,5,7,3,1\}$ & $-0.904$ & $-0.783$ & $-0.781$ & --- \\
+C & $\{0,2,3,1,5,7,6,4\}$ & $-0.869$ & $-0.631$ & \textbf{$-0.883$} & $-0.785$ \\
+D & $\{0,4,6,2,3,7,5,1\}$ & $-0.904$ & $-0.783$ & $-0.781$ & --- \\
+E & $\{0,4,5,1,3,7,6,2\}$ & $-0.906$ & $-0.746$ & $-0.815$ & --- \\
+F & $\{0,1,5,4,6,7,3,2\}$ & $-0.906$ & $-0.746$ & $-0.815$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Several structural properties emerge.  Patterns A, B, and D produce
+identical correlations at every order tested, forming an equivalence
+class under rotation.  Patterns E and F form a second equivalence class.
+Pattern C is uniquely volatile: it achieves the worst correlation at
+order 7 ($r = -0.631$) but the best at order 8 ($r = -0.883$).
+
+Critically, \textbf{no pattern consistently dominates across all orders.}
+The correlation is bounded within the narrow range $[-0.63, -0.91]$
+regardless of curve construction.  This suggests that the $r \approx
+-0.80$ spectral correspondence is a deep structural property of the
+3D Hilbert curve -- encoded in the octant-recursive traversal itself --
+rather than a feature of any particular construction choice that could
+be optimized toward $r \to -1.0$.
+
+The 4D Hilbert curve (Section~\ref{sec:4d}) further confirms this: the
+correlation \emph{weakens} with order in 4D, from $r = -0.78$ (order 4)
+to $r = -0.60$ (order 6).  The spectral correspondence is not a universal
+property of Hilbert curves but is specific to the 3D variant whose
+3-bit/mod-8 encoding naturally aligns with prime residue classes.
+\n\n\subsection{Honest Limitations}
 
 \subsubsection{Eigenvalues Correlate With But Do Not Equal Zeta Zeros}
 
