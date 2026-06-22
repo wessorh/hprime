@@ -42,6 +42,7 @@ func main() {
 	matrix := flag.Bool("matrix", false, "compute Hilbert plane operator matrix")
 	matrixJSON := flag.Bool("matrix-json", false, "output full covariance matrix as JSON")
 	op := flag.Bool("operator", false, "compute explicit formula operator and spectral response")
+	vm := flag.Bool("vm", false, "output von Mangoldt-weighted covariance matrix as JSON")
 	compare := flag.Bool("compare", false, "compare all variants for best plane alignment")
 	flag.Parse()
 
@@ -108,6 +109,10 @@ func main() {
 	}
 
 	// ── Plane alignment analysis ───────────────────────────────────────
+	if *vm {
+		computeVonMangoldtOperator(primes, uint32(*n), *planeVariant)
+		return
+	}
 	if *op {
 		computeOperatorExplicit(primes, uint32(*n), *planeVariant)
 		return
@@ -1509,4 +1514,165 @@ func computeOperatorExplicit(primes []uint64, order uint32, variant int) {
 		conc := maxPower / totalPower * 100
 		fmt.Printf("    γ_%d = %.3f:  %.1f%% concentrated in top plane\n", i+1, gamma, conc)
 	}
+}
+
+// computeVonMangoldtOperator builds the operator matrix using the von Mangoldt
+// function Λ(k) instead of the prime indicator.  Λ(k) = log(p) if k = p^m,
+// and the oscillatory term is (Λ(k) - 1)/√k.  This directly isolates the
+// explicit formula's spectral contribution without cumulative smoothing.
+func computeVonMangoldtOperator(primes []uint64, order uint32, variant int) {
+	dim := int(1 << order)
+	total := dim * dim * dim
+	fmt.Printf("\n── Von Mangoldt Operator (order %d, %dx%d) ──\n", order, dim, dim)
+
+	// Build prime power map: for each k, compute Λ(k)
+	// Λ(k) = log(p) if k = p^m, else 0
+	primeSet := make(map[uint64]bool)
+	for _, p := range primes {
+		primeSet[p] = true
+	}
+
+	// Build Hilbert curve
+	curve := build3DCurve(order, variant)
+
+	// Compute plane sizes
+	planeSize := make([]int, dim)
+	for k := 0; k < total; k++ {
+		z := curve[k] / (dim * dim)
+		planeSize[z]++
+	}
+
+	// Build the von Mangoldt-weighted vector per plane
+	// v[z] = (1/√|I_z|) Σ_{k∈I_z} (Λ(k) - 1) / √k
+	v := make([]float64, dim)
+	for k := 0; k < total; k++ {
+		z := curve[k] / (dim * dim)
+		kk := uint64(k)
+		if kk < 2 {
+			continue
+		}
+		// Compute Λ(k): check if k is a prime power
+		lambda := vonMangoldt(kk, primeSet)
+		if lambda > 0 {
+			v[z] += (lambda - 1.0) / math.Sqrt(float64(kk))
+		} else {
+			v[z] += (0.0 - 1.0) / math.Sqrt(float64(kk)) // Λ(k)=0, subtract 1
+		}
+	}
+	for z := 0; z < dim; z++ {
+		if planeSize[z] > 0 {
+			v[z] /= math.Sqrt(float64(planeSize[z]))
+		}
+	}
+
+	// Build the covariance matrix using von Mangoldt weights
+	cov := make([][]float64, dim)
+	for i := range cov {
+		cov[i] = make([]float64, dim)
+	}
+	counts := make([][]int, dim)
+	for i := range counts {
+		counts[i] = make([]int, dim)
+	}
+
+	// Use all adjacent pairs along the Hilbert curve
+	for k := 0; k < total-1; k++ {
+		z1 := curve[k] / (dim * dim)
+		z2 := curve[k+1] / (dim * dim)
+
+		w1 := vonMangoldtWeight(uint64(k), primeSet)
+		w2 := vonMangoldtWeight(uint64(k+1), primeSet)
+
+		cov[z1][z2] += (w1 - v[z1]) * (w2 - v[z2])
+		counts[z1][z2]++
+	}
+
+	// Normalize
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := 0; z2 < dim; z2++ {
+			if counts[z1][z2] > 0 {
+				cov[z1][z2] /= float64(counts[z1][z2])
+			}
+		}
+	}
+
+	// Symmetrize
+	for z1 := 0; z1 < dim; z1++ {
+		for z2 := z1 + 1; z2 < dim; z2++ {
+			avg := (cov[z1][z2] + cov[z2][z1]) / 2.0
+			cov[z1][z2] = avg
+			cov[z2][z1] = avg
+		}
+	}
+
+	// Output as JSON
+	fmt.Println("{")
+	fmt.Printf("  \"order\": %d,\n", order)
+	fmt.Printf("  \"dim\": %d,\n", dim)
+	fmt.Printf("  \"primes\": %d,\n", len(primes))
+	fmt.Printf("  \"weight\": \"von_mangoldt\",\n")
+	fmt.Println("  \"v\": [")
+	for z := 0; z < dim; z++ {
+		comma := ","
+		if z == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("    %.12f%s\n", v[z], comma)
+	}
+	fmt.Println("  ],")
+	fmt.Println("  \"covariance\": [")
+	for z1 := 0; z1 < dim; z1++ {
+		fmt.Print("    [")
+		for z2 := 0; z2 < dim; z2++ {
+			comma := ","
+			if z2 == dim-1 {
+				comma = ""
+			}
+			fmt.Printf("%.12f%s", cov[z1][z2], comma)
+		}
+		comma := ","
+		if z1 == dim-1 {
+			comma = ""
+		}
+		fmt.Printf("]%s\n", comma)
+	}
+	fmt.Println("  ]")
+	fmt.Println("}")
+}
+
+// vonMangoldt returns Λ(k) for integer k.
+// Λ(k) = log(p) if k = p^m for prime p and m ≥ 1, else 0.
+func vonMangoldt(k uint64, primeSet map[uint64]bool) float64 {
+	if k < 2 {
+		return 0
+	}
+	// Check if k is prime
+	if primeSet[k] {
+		return math.Log(float64(k))
+	}
+	// Check if k is a prime power > prime
+	// For k <= 2^20 (~1M), brute-force check is fine
+	for p := uint64(2); p*p <= k; p++ {
+		if primeSet[p] && k%p == 0 {
+			// Check if k is a power of p
+			temp := k
+			for temp%p == 0 {
+				temp /= p
+			}
+			if temp == 1 {
+				return math.Log(float64(p))
+			}
+			return 0 // divisible by p but not a power
+		}
+	}
+	return 0
+}
+
+// vonMangoldtWeight returns the normalized weight (Λ(k) - 1) / √k for the operator.
+func vonMangoldtWeight(k uint64, primeSet map[uint64]bool) float64 {
+	if k < 2 {
+		return -1.0 / math.Sqrt(2.0) // Λ(0)=Λ(1)=0, subtract 1
+	}
+	lambda := vonMangoldt(k, primeSet)
+	return (lambda - 1.0) / math.Sqrt(float64(k))
 }
