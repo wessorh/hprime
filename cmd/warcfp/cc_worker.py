@@ -21,6 +21,7 @@ import socket
 import struct
 import subprocess
 import tempfile
+import traceback
 import urllib.request
 import urllib.error
 from datetime import datetime
@@ -309,13 +310,39 @@ def main():
         else:
             print("No unprocessed files available.")
     elif cmd == "loop":
+        # Verify binary exists before starting loop
+        if not os.path.exists(WARCFP_BIN):
+            print(f"ERROR: {WARCFP_BIN} not found. Build with: make", file=sys.stderr)
+            sys.exit(1)
+        print(f"Worker {hostname} starting loop. Binary: {WARCFP_BIN}")
+
+        # Reclaim stuck files (processing for > 4 hours)
+        ch_exec(f"""
+            INSERT INTO commoncrawl.cc_warc_files (warc_path, crawl_id, segment, status)
+            SELECT warc_path, crawl_id, segment, 'new'
+            FROM commoncrawl.cc_warc_files FINAL
+            WHERE status = 'processing'
+              AND crawl_id = '{CRAWL}'
+              AND claimed_at < now() - INTERVAL 4 HOUR
+        """)
+
         while True:
-            path = claim_file(hostname)
-            if path:
-                process_warc(path, hostname)
-            else:
-                print("No unprocessed files. Waiting 60s...")
-                time.sleep(60)
+            try:
+                path = claim_file(hostname)
+                if path:
+                    process_warc(path, hostname)
+                else:
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] No unprocessed files. Waiting 60s...")
+                    time.sleep(60)
+            except KeyboardInterrupt:
+                print("\nShutting down...")
+                break
+            except Exception as e:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] Error: {e}", file=sys.stderr)
+                import traceback
+                traceback.print_exc()
+                print(f"Waiting 30s before retry...")
+                time.sleep(30)
     elif cmd == "status":
         show_status()
     else:
