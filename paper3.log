@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2025/dev/Debian) (preloaded format=pdflatex 2026.6.9)  21 JUN 2026 19:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2025/dev/Debian) (preloaded format=pdflatex 2026.6.9)  21 JUN 2026 20:28
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -445,7 +445,7 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 20.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-<odd.png, id=68, 393.47pt x 459.7175pt>
+<odd.png, id=72, 393.47pt x 459.7175pt>
 File: odd.png Graphic file (type png)
 <use odd.png>
 Package pdftex.def Info: odd.png  used on input line 42.
@@ -459,10 +459,6 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-
 
 [2]
 
@@ -480,7 +476,7 @@ $+7\OML/cmm/m/it/10.95 :\OT1/cmr/m/n/10.95 15 \OMS/cmsy/m/n/10.95 !
 [3]
 ! Undefined control sequence.
 l.296 \n
-        \n\section{Discussion}
+        \n
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -489,7 +485,7 @@ and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
 l.296 \n\n
-          \section{Discussion}
+          
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -499,33 +495,72 @@ and I'll forget about whatever was undefined.
 
 
 [4]
-Overfull \hbox (12.7879pt too wide) in paragraph at lines 361--363
-[]\OT1/cmr/m/n/10.95 The eigen-func-tions of $[]$ should be con-structible from
- the Hilbert curve's plane-decomposition
- []
+! Undefined control sequence.
+l.348 \n
+        \n\section{Discussion}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.348 \n\n
+          \section{Discussion}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
 
 
 
 [5]
+Overfull \hbox (12.7879pt too wide) in paragraph at lines 413--415
+[]\OT1/cmr/m/n/10.95 The eigen-func-tions of $[]$ should be con-structible from
+ the Hilbert curve's plane-decomposition
+ []
+
+! Undefined control sequence.
+l.438 ...tute a proof of the Riemann Hypothesis.\n
+                                                  \nThese findings connect a...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.438 ...proof of the Riemann Hypothesis.\n\nThese
+                                                   findings connect a discre...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
 
 [6]
 
-[7 <./odd.png>] (./paper3.aux)
+[7]
+
+[8 <./odd.png>] (./paper3.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `paper3.out' has not changed.
-(rerunfilecheck)             Checksum: 908BCE480EE4E2809582A2E2F4248A1C;2749.
+(rerunfilecheck)             Checksum: B5BA91AF1D09C63F3F3DAB0635FE1E95;2963.
  ) 
 Here is how much of TeX's memory you used:
- 12113 strings out of 475102
- 188122 string characters out of 5764878
- 602721 words of memory out of 5000000
- 34933 multiletter control sequences out of 15000+600000
+ 12118 strings out of 475102
+ 188192 string characters out of 5764878
+ 604031 words of memory out of 5000000
+ 34935 multiletter control sequences out of 15000+600000
  569243 words of font info for 76 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 75i,11n,79p,658b,527s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,709b,496s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </home/wessorh/.texlive2025/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1095.6
 00pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><
 /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/s
@@ -540,13 +575,14 @@ onts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
 /cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pf
 b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/
 share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/
-texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf
--dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on paper3.pdf (7 pages, 403108 bytes).
+texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-
+dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/f
+onts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on paper3.pdf (8 pages, 419543 bytes).
 PDF statistics:
- 248 PDF objects out of 1000 (max. 8388607)
- 200 compressed objects within 2 object streams
- 53 named destinations out of 1000 (max. 500000)
- 134 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 266 PDF objects out of 1000 (max. 8388607)
+ 214 compressed objects within 3 object streams
+ 56 named destinations out of 1000 (max. 500000)
+ 142 words of extra memory for PDF output out of 10000 (max. 10000000)
 
