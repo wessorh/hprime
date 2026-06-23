@@ -13,8 +13,7 @@
  *   ./warcfp --stdin           (read WARC from stdin)
  */
 
-#undef _GNU_SOURCE
-#undef __USE_GNU
+#define _BITS_MATHCALLS_H 1
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>

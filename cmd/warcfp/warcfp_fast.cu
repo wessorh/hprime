@@ -6,11 +6,10 @@
  * Build:  nvcc -O3 -o warcfp_fast warcfp_fast.cu -lm
  */
 
-/* Prevent glibc >= 2.40 from declaring sinpi/cospi (guarded by __USE_GNU
-   which comes from _GNU_SOURCE that nvcc defines by default). These conflict
-   with CUDA 12.x's declarations. CUDA headers provide all math we need. */
-#undef _GNU_SOURCE
-#undef __USE_GNU
+/* Block glibc bits/mathcalls.h — it declares sinpi/cospi with noexcept
+   which conflicts with CUDA 12.x. CUDA headers provide all math we need.
+   Pre-defining the include guard skips the file entirely. */
+#define _BITS_MATHCALLS_H 1
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
