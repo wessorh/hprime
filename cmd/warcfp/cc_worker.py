@@ -108,24 +108,25 @@ def process_warc(warc_path, hostname):
     t0 = time.time()
 
     # Stream download with on-the-fly decompression
+    # Cap at 2 GB decompressed (warcfp_fast parser limit)
+    MAX_DECOMPRESSED = 2_000_000_000
+    tmp_path = None
     try:
         resp = urllib.request.urlopen(url, timeout=600)
         raw_len = 0
-        tmp_path = None
 
         with tempfile.NamedTemporaryFile(suffix=".warc", delete=False) as tmp:
             tmp_path = tmp.name
-            # Wrap HTTP response in gunzip, decompress while downloading
             dcomp = gzip.GzipFile(fileobj=resp, mode="rb")
-            while True:
-                chunk = dcomp.read(1 << 20)  # 1 MB chunks
-                if not chunk:
-                    break
+            while raw_len < MAX_DECOMPRESSED:
+                chunk = dcomp.read(1 << 20)
+                if not chunk: break
                 tmp.write(chunk)
                 raw_len += len(chunk)
 
         t1 = time.time()
-        print(f"  Downloaded+decompressed {raw_len:,} bytes in {t1-t0:.1f}s ({raw_len/(t1-t0)/1e6:.0f} MB/s)", flush=True)
+        truncated = "(truncated) " if raw_len >= MAX_DECOMPRESSED else ""
+        print(f"  Downloaded+decompressed {truncated}{raw_len:,} bytes in {t1-t0:.1f}s ({raw_len/(t1-t0)/1e6:.0f} MB/s)", flush=True)
 
     except Exception as e:
         ch_exec(f"""
@@ -165,10 +166,9 @@ def process_warc(warc_path, hostname):
             VALUES ('{warc_path}', '{CRAWL}', '{segment}', 'failed', '{str(e)[:200]}')
         """)
         print(f"  Fingerprinting failed: {e}", flush=True)
-        os.unlink(tmp_path)
         return
     finally:
-        os.unlink(tmp_path)
+        if tmp_path: os.unlink(tmp_path)
 
     # Insert into ClickHouse
     batch = []
@@ -190,12 +190,13 @@ def process_warc(warc_path, hostname):
         t3 = time.time()
         print(f"  Inserted {len(batch)} rows in {t3-t2:.1f}s", flush=True)
 
-    # Mark done
+    # Mark done (or failed if no fingerprints extracted)
+    final_status = 'done' if len(batch) > 0 else 'failed'
     ch_exec(f"""
         INSERT INTO commoncrawl.cc_warc_files
             (warc_path, crawl_id, segment, status, completed_at,
              record_count, fingerprint_count, bytes_downloaded)
-        VALUES ('{warc_path}', '{CRAWL}', '{segment}', 'done', now(),
+        VALUES ('{warc_path}', '{CRAWL}', '{segment}', '{final_status}', now(),
                 {len(valid)}, {len(batch)}, {raw_len})
     """)
 
