@@ -6,13 +6,17 @@
  * Build:  nvcc -O3 -o warcfp_fast warcfp_fast.cu -lm
  */
 
+/* Prevent glibc math.h from conflicting with CUDA 12.x math headers.
+   glibc >= 2.40 declares sinpi/cospi with noexcept but CUDA declares
+   them without it. Defining _MATH_H skips glibc's math.h entirely.
+   CUDA's own headers provide sin/cos/ceil/floor/fabs. */
+#define _MATH_H 1
+#include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <math.h>
 #include <ctype.h>
-#include <cuda_runtime.h>
 
 #define FP_SIZE      16
 #define BITS         14

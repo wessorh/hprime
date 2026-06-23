@@ -13,14 +13,14 @@
  *   ./warcfp --stdin           (read WARC from stdin)
  */
 
+#define _MATH_H 1
+#include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <math.h>
 #include <time.h>
 #include <ctype.h>
-#include <cuda_runtime.h>
 
 /* ─── Constants ─────────────────────────────────────────────────────── */
 #define FP_SIZE      16
