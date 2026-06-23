@@ -13,9 +13,6 @@
  *   ./warcfp --stdin           (read WARC from stdin)
  */
 
-#ifndef __NV_IEC_60559_FUNCS_EXCEPTION_SPECIFIER
-#define __NV_IEC_60559_FUNCS_EXCEPTION_SPECIFIER noexcept(true)
-#endif
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>

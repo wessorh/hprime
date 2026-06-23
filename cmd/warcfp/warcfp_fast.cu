@@ -6,12 +6,6 @@
  * Build:  nvcc -O3 -o warcfp_fast warcfp_fast.cu -lm
  */
 
-/* CUDA 12.x declares sinpi/cospi without noexcept; glibc >= 2.40 redeclares
-   with noexcept(true). Define the exception specifier macro so CUDA's
-   declarations match glibc's. */
-#ifndef __NV_IEC_60559_FUNCS_EXCEPTION_SPECIFIER
-#define __NV_IEC_60559_FUNCS_EXCEPTION_SPECIFIER noexcept(true)
-#endif
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
