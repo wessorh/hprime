@@ -148,14 +148,25 @@ def process_warc(warc_path, hostname):
         if result.returncode != 0:
             raise Exception(f"warcfp_fast failed: {result.stderr[:200]}")
 
+        # Check for GPU failure
+        if "FATAL" in result.stderr or result.returncode != 0:
+            raise Exception(f"warcfp_fast GPU error: {result.stderr[:200]}")
+
         lines = result.stdout.strip().splitlines()
-        # Filter valid lines
         valid = []
+        zero_count = 0
         for line in lines:
             line = line.strip()
             if not line or "  " not in line: continue
             fp_hex, url = line.split("  ", 1)
-            if len(fp_hex) == 32: valid.append((fp_hex, url[:2048]))
+            if len(fp_hex) != 32: continue
+            if fp_hex == "00000000000000000000000000000000":
+                zero_count += 1
+                continue  # silently discard zero fingerprints
+            valid.append((fp_hex, url[:2048]))
+
+        if zero_count > 0:
+            print(f"  WARNING: {zero_count} zero fingerprints discarded", flush=True)
 
         print(f"  Fingerprinted {len(valid)} pages in {t2-t1:.1f}s", flush=True)
 

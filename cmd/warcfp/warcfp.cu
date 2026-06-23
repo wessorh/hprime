@@ -243,12 +243,26 @@ static void batch_process(Batch *b) {
     uint8_t *host_out = (uint8_t *)malloc(N * FP_SIZE);
     cudaMemcpy(host_out, b->d_outputs, N * FP_SIZE * sizeof(uint8_t), cudaMemcpyDeviceToHost);
 
+    static const uint8_t zero_fp[FP_SIZE] = {0};
+    int zero_count = 0;
     for (int i = 0; i < N; i++) {
         uint8_t *fp = host_out + i * FP_SIZE;
+        if (memcmp(fp, zero_fp, FP_SIZE) == 0) {
+            zero_count++;
+            if (zero_count <= 3)
+                fprintf(stderr, "ERROR: zero fingerprint for %s\n", b->pages[i].url);
+        }
         for (int j = 0; j < FP_SIZE; j++) printf("%02x", fp[j]);
         printf("  %s\n", b->pages[i].url);
     }
     fflush(stdout);
+
+    if (zero_count > 0) {
+        fprintf(stderr, "FATAL: %d zero fingerprints in batch of %d — GPU kernel not running. Aborting.\n",
+                zero_count, N);
+        free(host_out);
+        exit(1);
+    }
 
     free(host_out);
 
