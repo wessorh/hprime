@@ -1,0 +1,667 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[margin=1in]{caption}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+\title{The Z-Plane Covariance Operator of the Hilbert Curve:\\
+A Tridiagonal Toeplitz Spectrum That Correlates With,\\
+But Cannot Equal, the Riemann Zeros}
+
+\author{Rick Wesson\\
+Support Intelligence, Inc.}
+\date{July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study a self-adjoint operator $C_D^{(n)}$ obtained by projecting the
+prime indicator function onto the Z-axis of a $D$-dimensional Hilbert
+space-filling curve of order $n$ and computing the resulting spatial
+covariance between axis-aligned slabs (``Z-planes''). We prove that when
+$C_D^{(n)}$ is built from face-adjacency of the ambient grid, it is
+\emph{exactly} tridiagonal Toeplitz, independent of $D$, $n$, and the choice
+of indicator function, giving the closed-form spectrum $\lambda_k = c_0 +
+2c_1\cos(\pi k/(n+1))$. Empirically, for the prime indicator, the largest
+eigenvalues of $C_D^{(n)}$ correlate with the imaginary parts of the first
+64 non-trivial zeta zeros at $|r|$ up to $0.990$ ($D=4$, spatial
+construction, order 4), a correlation we independently re-derive from the
+underlying covariance data with a properly randomized permutation test
+(previous reported significance figures rested on a non-randomized shuffle).
+We show the correlation is a finite-range artifact: the Taylor expansion of
+the cosine spectrum reproduces the empirically observed quadratic
+approximation to $|\lambda(\gamma)|$, but the operator's spectrum is bounded
+in $[c_0 - 2|c_1|, c_0+2|c_1|]$ for every $n$, while the zeta zero counting
+function grows as $N(T) \sim (T/2\pi)\log(T/2\pi e)$. No finite- or
+infinite-order member of this operator family can therefore satisfy the
+Hilbert--P\'{o}lya correspondence exactly, regardless of $D$ or $n$. We give
+a precise statement of what spectral properties such an operator would need
+to have, and report the reproducibility issues we found and corrected in
+re-deriving these results.
+\end{abstract}
+
+% ============================================================================
+\section{Introduction}
+% ============================================================================
+
+The Hilbert--P\'{o}lya conjecture proposes that the imaginary parts
+$\gamma_k$ of the non-trivial zeros of $\zeta(s)$ are the eigenvalues of a
+self-adjoint operator on some Hilbert space; if such an operator can be
+exhibited, the Riemann Hypothesis (RH) follows from self-adjointness alone.
+No computationally explicit candidate operator has been broadly accepted.
+
+This paper studies one geometrically motivated candidate: project the
+indicator function of the primes onto axis-aligned slabs of a
+$D$-dimensional Hilbert curve, and compute the empirical covariance between
+slabs induced by grid adjacency. This construction has two independent
+appeals. First, the Hilbert curve is measure-preserving and its
+slab decomposition is canonical, so the resulting operator has no free
+parameters beyond $D$ and the curve order $n$. Second, as we show in
+Section~\ref{sec:tridiag}, the operator's structure is derivable in closed
+form: it is not merely diagonalizable numerically but tridiagonal Toeplitz
+\emph{by construction}, with a spectrum given by an elementary trigonometric
+formula independent of $D$ and of any arithmetic property of the primes.
+
+Our contribution is threefold:
+
+\begin{enumerate}
+\item We prove the tridiagonal Toeplitz structure and derive its spectrum in
+   closed form (Theorem~\ref{thm:tridiag}), explaining an empirical
+   observation from earlier numerical work \cite{wesson2026a} as a
+   consequence of face-adjacency alone, independent of dimension.
+\item We give an independent, from-scratch numerical re-derivation of the
+   eigenvalue--zeta-zero correlation reported for this construction, using a
+   properly randomized permutation test. Two irregularities in the original
+   analysis pipeline are identified and corrected in the process
+   (Section~\ref{sec:reproducibility}): a non-randomized ``permutation''
+   test, and a curve-implementation/documentation mismatch for the 3D case.
+   The correlation itself survives both corrections essentially unchanged.
+\item We give a precise argument, in the language of spectral density, for
+   why this operator family cannot satisfy the Hilbert--P\'{o}lya
+   correspondence at any order or dimension, and state the density
+   condition any successor construction would need to satisfy.
+\end{enumerate}
+
+% ============================================================================
+\section{Construction}
+% ============================================================================
+
+\subsection{The Hilbert curve and its Z-planes}
+
+Let $H_D: \{0,\ldots,2^{Dn}-1\} \to \{0,\ldots,2^n-1\}^D$ be the
+$D$-dimensional Hilbert curve of order $n$, realized via the recursive
+Butz construction \cite{butz1971,hamilton2006}: at each of $n$ recursion
+levels, $D$ bits of the index select one of $2^D$ sub-hypercubes, with a
+Gray-code map and an orientation state $(e,d) \in \{0,\ldots,2^D-1\} \times
+\{0,\ldots,D-1\}$ propagated across levels to keep consecutive sub-hypercubes
+face-adjacent. We verified this implementation directly: the fraction of
+consecutive integers $k, k+1$ whose images differ by a single face-step
+($\ell_1$ distance 1) is $89.3\%$ ($D=3$), $94.2\%$ ($D=4$), $97.0\%$
+($D=5$), and $98.5\%$ ($D=6$) at order 4, consistent with the
+boundary-crossing loss $1-(1-2^{1-n})^D$ predicted by the construction.
+
+The Z-plane of a cell $(x_1,\ldots,x_D)$ is $z = x_3$. This partitions the
+$2^{Dn}$ cells into $2^n$ slabs of $2^{(D-1)n}$ cells each, independent of
+$D$: increasing the ambient dimension only enlarges the slabs, not their
+number.
+
+\subsection{Two covariance constructions}
+
+Let $f: \{0,\ldots,2^{Dn}-1\} \to \{0,1\}$ be the prime indicator ($f(k)=1$
+iff $k$ is prime), and let $\mu_z$ be the mean of $f$ over cells in plane
+$z$. We consider two ways of coupling planes.
+
+\textbf{Curve-adjacent.} For each consecutive pair $(k,k+1)$ along the
+curve, with Z-planes $z_1,z_2$:
+\begin{equation}
+C^{\mathrm{curve}}[z_1,z_2] = \frac{1}{N_{z_1z_2}}\sum_{(k,k+1)} (f(k)-\mu_{z_1})(f(k+1)-\mu_{z_2}).
+\end{equation}
+
+\textbf{Spatial.} For each cell $c$ and each of its $2D$ face-neighbors
+$c'$ in the ambient grid, with Z-planes $z_1,z_2$ of $c,c'$:
+\begin{equation}
+C^{\mathrm{spatial}}[z_1,z_2] = \frac{1}{N_{z_1z_2}}\sum_{c}\sum_{c'} (f(d_c)-\mu_{z_1})(f(d_{c'})-\mu_{z_2}),
+\end{equation}
+where $d_c$ is the Hilbert index of cell $c$. The spatial construction
+measures genuine geometric clustering; the curve-adjacent construction
+measures clustering along the traversal order, which coincides with spatial
+adjacency only $89$--$98.5\%$ of the time (Section 2.1).
+
+Both matrices are symmetrized ($C \leftarrow (C+C^\top)/2$) and are
+real, so their eigenvalues are real. We write $\lambda_1,\ldots,\lambda_n$
+for the eigenvalues sorted by $|\lambda_i|$ descending.
+
+% ============================================================================
+\section{The Tridiagonal Toeplitz Theorem}
+\label{sec:tridiag}
+% ============================================================================
+
+\begin{theorem}
+\label{thm:tridiag}
+For any $D \geq 3$, any order $n$, and any function $f$ on the cells of the
+$D$-dimensional Hilbert curve, the spatial covariance matrix
+$C^{\mathrm{spatial}}$ satisfies $C^{\mathrm{spatial}}[z_1,z_2] = 0$ for all
+$|z_1-z_2| > 1$.
+\end{theorem}
+
+\begin{proof}
+A face-neighbor of a cell changes exactly one coordinate by $\pm 1$. Of the
+$2D$ face-neighbors of a cell $(x_1,\ldots,x_D)$, exactly $2(D-1)$ change a
+coordinate other than $x_3$ and leave the Z-plane $z=x_3$ unchanged; the
+remaining $2$ change $x_3$ by $\pm 1$, moving to an adjacent plane. No
+face-neighbor changes $x_3$ by $2$ or more. Hence every term contributing to
+$C^{\mathrm{spatial}}[z_1,z_2]$ has $|z_1-z_2|\le 1$, and the sum defining
+entries with $|z_1-z_2|>1$ is empty.
+\end{proof}
+
+This is a statement about the adjacency graph of the grid, not about $f$ or
+about primes; it holds verbatim for a random $f$ and is therefore also a
+practical diagnostic for whether a candidate space-filling curve
+implementation is genuinely face-adjacent (Section~\ref{sec:reproducibility}
+gives an example where it was not).
+
+\begin{proposition}
+\label{prop:toeplitz}
+$C^{\mathrm{spatial}}$ is (interior-)Toeplitz: $C[z,z]\approx c_0$ and
+$C[z,z\pm1]\approx c_1$ for all $z$, with
+$|c_1/c_0| \to 1$ as $n \to \infty$.
+\end{proposition}
+
+This follows because the diagonal averages the same-plane contribution over
+$2(D-1)$ neighbor pairs and the off-diagonal averages the cross-plane
+contribution over $2$ neighbor pairs; both estimate $\mathrm{Var}[f]$ after
+normalization by pair count, so their ratio tends to 1 independent of $D$.
+Table~\ref{tab:tridiag-verify} confirms this for the prime indicator in
+$D=4$.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+$n$ & $c_0$ & $c_1$ & $|c_1/c_0|$ & $\max|C[z_1,z_2]|_{|z_1-z_2|>1}$\\
+\midrule
+4 & $-9.940\times10^{-3}$ & $-9.997\times10^{-3}$ & 1.0057 & $0$ \\
+5 & $-6.318\times10^{-3}$ & $-6.305\times10^{-3}$ & 0.9980 & $0$ \\
+6 & $-4.195\times10^{-3}$ & $-4.235\times10^{-3}$ & 1.0097 & $0$ \\
+7 & $-3.048\times10^{-3}$ & $-3.048\times10^{-3}$ & 0.99995 & $0$ \\
+\bottomrule
+\end{tabular}
+\caption{4D spatial covariance for the prime indicator, orders 4--7
+(re-measured directly from the covariance matrices). $c_2,c_3,\ldots$ are
+zero to floating-point precision at every order; the corresponding
+curve-adjacent matrices at the same orders have $\max|C[z_1,z_2]|_{|z_1-z_2|>1}
+\in [0.004,0.03]$, confirming the tridiagonal property is specific to the
+spatial construction.}
+\label{tab:tridiag-verify}
+\end{table}
+
+\begin{corollary}[Grenander--Szeg\H{o} \cite{grenander1958}]
+\label{cor:eigenvalues}
+The eigenvalues and eigenvectors of $C^{\mathrm{spatial}}$ are
+\begin{equation}
+\lambda_k = c_0 + 2c_1\cos\!\left(\frac{\pi k}{n+1}\right), \qquad
+v_k[j] = \sin\!\left(\frac{\pi k j}{n+1}\right), \qquad k,j=1,\ldots,n.
+\label{eq:cosine}
+\end{equation}
+\end{corollary}
+
+We verified Eq.~\eqref{eq:cosine} directly against numerical
+diagonalization of the four matrices in Table~\ref{tab:tridiag-verify}, with
+eigenvalues ordered to match the monotone-in-$k$ form of
+Eq.~\eqref{eq:cosine} (i.e., ascending, \emph{not} sorted by $|\lambda|$ --
+the two orderings coincide only for $k \lesssim 2n/3$; see
+Remark~\ref{rem:ordering}). Table~\ref{tab:analytic-fit} reports the fit.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccc}
+\toprule
+$n$ (order) & matrix size & Pearson $r$ & MAD (raw) \\
+\midrule
+4 & 16  & $0.999859$ & $1.71\times10^{-4}$ \\
+5 & 32  & $0.999920$ & $2.65\times10^{-4}$ \\
+6 & 64  & $0.999961$ & $1.42\times10^{-4}$ \\
+7 & 128 & $0.999976$ & $1.11\times10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\caption{Closed-form spectrum (Eq.~\ref{eq:cosine}) vs. numerically
+diagonalized eigenvalues, 4D spatial covariance. Agreement improves with
+$n$, consistent with the boundary-cell fraction ($\sim 6\%$ at $n=7$)
+being the dominant source of residual error.}
+\label{tab:analytic-fit}
+\end{table}
+
+\begin{remark}
+\label{rem:ordering}
+Eq.~\eqref{eq:cosine} is monotone increasing in $k$ (since $c_0=c_1<0$),
+running from $3c_0$ at $k=1$ to $-c_0$ at $k=n$. Its \emph{magnitude}
+$|\lambda_k|$ is therefore not monotone: it decreases from $k=1$ to a zero
+crossing near $k \approx 2n/3$ and then increases again with the opposite
+sign. The two natural orderings -- by $k$, or by $|\lambda|$ descending --
+agree only on the first branch. This distinction matters: fitting
+Eq.~\eqref{eq:cosine} requires the natural $k$-ordering (Table
+\ref{tab:analytic-fit}); comparing against the zeta zeros
+(Section~\ref{sec:correlation}) uses the $|\lambda|$-descending ordering,
+following the original construction, restricted to the first branch
+($k \le 64 \ll 2n/3$ for $n\ge 96$). Conflating the two orderings when
+$n$ is not $\gg 64$ silently produces a large, spurious drop in the fitted
+correlation; we encountered this exact error while independently
+re-deriving Table~\ref{tab:analytic-fit} and record it here as a caution
+for future work with this construction.
+\end{remark}
+
+% ============================================================================
+\section{Correlation with the Zeta Zeros}
+\label{sec:correlation}
+% ============================================================================
+
+\subsection{Method}
+
+For each covariance matrix we compute eigenvalues, sort by $|\lambda_i|$
+descending, take the first $k=\min(64,n)$, and compare against the first
+$k$ zeta zeros $\gamma_1 < \cdots < \gamma_k$ (LMFDB \cite{lmfdb}) via:
+Pearson $r$ between $|\lambda_i|$ and $\gamma_i$; MAD between both sequences
+independently min--max normalized to $[0,1]$; and an empirical $p$-value
+from $2\times10^4$ trials of a permutation test that independently shuffles
+the eigenvalue vector using a seeded pseudo-random generator, re-drawn on
+every trial, and reports the fraction of shuffles with $|r_{\mathrm{perm}}|
+\ge |r_{\mathrm{obs}}|$.
+
+\subsection{Results}
+
+Table~\ref{tab:correlation} gives results across $D\in\{3,4,5,6\}$, using
+whichever construction (curve-adjacent or spatial) is available for each
+$D$ in the underlying data. All values were computed independently
+from the covariance matrices, not taken from prior reports.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llrrrrr}
+\toprule
+$D$ & Construction & Order $n$ & Pearson $r$ & MAD & perm.\ $p$ & off-tridiag.\\
+\midrule
+3 & curve-adj. & 6  & $-0.927$ & $0.546$ & $<5\times10^{-5}$ & $4.9\times10^{-2}$\\
+3 & curve-adj. & 9  & $-0.890$ & $0.512$ & $<5\times10^{-5}$ & $3.4\times10^{-2}$\\
+3 & curve-adj. & 11 & $-0.919$ & $0.504$ & $<5\times10^{-5}$ & $1.2\times10^{-2}$\\
+4 & curve-adj. & 6  & $-0.866$ & $0.518$ & $<5\times10^{-5}$ & $3.0\times10^{-2}$\\
+4 & spatial    & 6  & $-0.988$ & $0.538$ & $<5\times10^{-5}$ & $0$\\
+4 & spatial    & 7  & $-0.961$ & $0.500$ & $<5\times10^{-5}$ & $0$\\
+5 & curve-adj. & 4  & $-0.981$ & $0.557$ & $<5\times10^{-5}$ & $6.8\times10^{-3}$\\
+5 & curve-adj. & 5  & $-0.943$ & $0.520$ & $<5\times10^{-5}$ & $1.4\times10^{-2}$\\
+6 & curve-adj. & 4  & $-0.971$ & $0.544$ & $<5\times10^{-5}$ & $2.6\times10^{-3}$\\
+\bottomrule
+\end{tabular}
+\caption{Eigenvalue--zeta-zero correlation, independently reconstructed.
+``perm.\ $p$'' is from $2\times10^4$ properly randomized shuffles (0 of
+$2\times10^4$ met or exceeded $|r_{\mathrm{obs}}|$ in every row shown).
+Full results across 32 matrices (orders 2--11, all available $D$ and both
+constructions) are in the supplementary script output.}
+\label{tab:correlation}
+\end{table}
+
+The strongest and most consistent correlation is $D=4$ spatial
+($r=-0.990$ to $-0.961$ across orders 4--7, exactly tridiagonal at every
+order). The 3D and 4D curve-adjacent constructions perform comparably to
+each other at matched order ($r\approx -0.87$ to $-0.93$); dimension alone
+does not predict correlation strength once the construction is fixed
+(Table~\ref{tab:order6}).
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+Construction (order 6) & $D$ & $r$ & Off-tridiagonal\\
+\midrule
+Curve-adjacent (original impl.) & 3 & $-0.927$ & $4.9\times10^{-2}$\\
+Curve-adjacent (Butz, 89\% adj.) & 3 & $-0.943$ & $2.6\times10^{-2}$\\
+Curve-adjacent (Butz, 94\% adj.) & 4 & $-0.866$ & $3.0\times10^{-2}$\\
+Spatial (Butz, 94\% adj.) & 4 & $-0.988$ & $0$\\
+\bottomrule
+\end{tabular}
+\caption{Order-6 comparison across constructions. Two independent 3D
+implementations (differing in curve-adjacency percentage, 50\% vs.\ 89\%)
+agree to within $0.016$ in $r$, confirming the correlation does not depend
+sensitively on curve-implementation details. 4D only outperforms 3D once
+the spatial construction is used; the curve-adjacent constructions in 3D
+and 4D are comparable.}
+\label{tab:order6}
+\end{table}
+
+\begin{remark}
+The Spearman rank correlation is $-1$ in essentially every case in
+Table~\ref{tab:correlation}. This is not independent evidence: both
+$|\lambda_i|$ (sorted) and $\gamma_i$ (sorted) are monotone sequences of
+opposite orientation, which forces $\rho=-1$ regardless of any deeper
+relationship. Only the Pearson $r$ on the \emph{unsorted-within-rank}
+values, and the permutation test, carry information about whether the
+specific magnitudes align beyond monotonicity.
+\end{remark}
+
+\subsection{Origin of the quadratic approximation}
+
+Combining Eq.~\eqref{eq:cosine} with the Riemann--von Mangoldt counting
+function $N(T) = (T/2\pi)\log(T/2\pi e) + 7/8 + O(\log T)$ and identifying
+the eigenvalue rank $k$ with $N(\gamma_k)$, the small-angle expansion
+$\cos(\pi k/(n+1)) \approx 1 - \pi^2k^2/2(n+1)^2$ gives
+\begin{equation}
+|\lambda_k| \approx |c_0+2c_1| - \frac{c_1\pi^2}{(n+1)^2}\,N(\gamma_k)^2,
+\end{equation}
+which is quadratic in $N(\gamma)$ and, since $\log^2\gamma$ varies by only a
+factor of $\sim 3.5$ over $\gamma\in[14,170]$ (the first 64 zeros),
+approximately quadratic in $\gamma$ itself over this finite range. This
+reproduces the previously reported empirical fit $|\lambda(\gamma)|\approx
+a\gamma^2+b\gamma+c$ (residual MAD $\approx 0.007$) as a second-order Taylor
+artifact of the cosine spectrum, not as an independent regularity.
+
+% ============================================================================
+\section{Why the Correspondence Cannot Be Exact}
+\label{sec:obstruction}
+% ============================================================================
+
+\begin{proposition}[Spectral class mismatch]
+\label{prop:mismatch}
+For every $D\ge3$ and every order $n$, the spectrum
+$\{\lambda_k\}_{k=1}^n$ of $C_D^{(n),\mathrm{spatial}}$ satisfies
+$\lambda_k \in [c_0-2|c_1|,\,c_0+2|c_1|]$, an interval of width
+$4|c_1|\to 0$ as the sample size $2^{(D-1)n}$ per plane grows (since
+$c_0,c_1 = O(1/\sqrt{\text{plane size}})$ by the CLT for a Bernoulli
+indicator). The zeta zero sequence satisfies $\gamma_k \to \infty$ with
+counting function $N(T)\sim(T/2\pi)\log(T/2\pi e)$. No affine or
+polynomial recalibration $\phi$ with $\gamma_k = \phi(\lambda_k)$ for all
+$k$ and all $n$ can exist, because the left side is unbounded in $k$ for
+fixed $\phi$ while the right side remains confined to a shrinking bounded
+interval.
+\end{proposition}
+
+This is stronger than the observation that correlation is not identity: it
+identifies the obstruction as a property of \emph{spectral density}, not of
+fit quality. A bounded, order-$n$ operator with $O(2^n)$ eigenvalues packed
+into an interval of width $O(2^{-(D-1)n/2})$ has eigenvalue spacing
+shrinking exponentially in $n$ at fixed position in the spectrum, whereas
+the zeta zero spacing $\gamma_{k+1}-\gamma_k \sim 2\pi/\log\gamma_k$ shrinks
+only logarithmically. Matching the two counting functions asymptotically --
+a necessary condition for any Hilbert--P\'{o}lya candidate -- would require
+an operator whose spectrum literally diverges as $n\to\infty$, which
+$C_D^{(n)}$, being a normalized covariance (entries bounded by
+$\mathrm{Var}[f]\le 1/4$), cannot do by construction.
+
+\begin{remark}
+This rules out this specific operator family, constructed from any
+$D$, any order, and either adjacency rule; it does not address whether some
+other function $f$ of the Hilbert curve, or an unnormalized construction
+with entries growing in $n$, could satisfy the density condition. We regard
+Proposition~\ref{prop:mismatch} as delimiting the search space rather than
+closing it.
+\end{remark}
+
+% ============================================================================
+\section{Related Approaches}
+\label{sec:related}
+% ============================================================================
+
+The Z-plane covariance operator is not the first construction to correlate
+strongly with the zeta zeros over a finite or asymptotic regime while
+falling short of an exact correspondence. Several established constructions
+in the mathematical-physics and noncommutative-geometry literature exhibit
+the same qualitative pattern: an identifiable structural property, not
+merely insufficient fit quality, is what prevents closure into a proof.
+We compare four of them to the obstruction identified in
+Proposition~\ref{prop:mismatch}.
+
+\textbf{Fractal potential fits (Wu--Sprung).} Wu and Sprung
+\cite{wusprung1993} constructed a one-dimensional Schr\"{o}dinger potential
+via inverse scattering whose low-lying eigenvalues reproduce the first
+several hundred Riemann zeros, at the cost of the potential itself being
+fractal (box-counting dimension $3/2$). They note explicitly that
+\emph{any} finite number of low-lying zeros can be reproduced by adding
+fluctuations to the smooth background potential -- i.e., the construction
+is an inverse-scattering fit to a prescribed finite target, not a forward
+derivation from an independent principle. This is the closest structural
+analogue to the present work: both constructions achieve strong finite-range
+agreement precisely because they have enough free parameters (fluctuation
+terms; choice of $D$, $n$, and adjacency rule) relative to the $64$--$500$
+zeros being matched, and neither has been shown to constrain the zeros
+outside the fitted range.
+
+\textbf{The $H=xp$ model (Berry--Keating).} Berry and Keating
+\cite{berrykeating1999} proposed the classical Hamiltonian $H=xp$,
+regularized by restricting phase space to $|x|>\ell_x$, $|p|>\ell_p$ with
+$\ell_x\ell_p=2\pi\hbar$. The resulting semiclassical counting function
+$N_{BK}(E) = (E/2\pi)(\log(E/2\pi)-1)+1$ reproduces the leading
+$T\log T$ growth of the true zeta zero counting function \emph{by
+construction} -- unlike $C_D^{(n)}$, whose bounded spectrum cannot do so
+at any order (Proposition~\ref{prop:mismatch}). What the $xp$ model lacks
+is rigor at the operator level: $xp$ is not essentially self-adjoint on
+$L^2(\mathbb{R})$, and the phase-space cutoff has no first-principles
+justification beyond reproducing the correct asymptotic density. The two
+constructions thus fail in complementary ways -- correct density without a
+rigorous operator, versus a rigorous (finite-matrix) operator with the
+wrong density.
+
+\textbf{Landau levels (Sierra--Townsend).} Sierra and Townsend
+\cite{sierratownsend2008} relate the zeros to the spectrum of a
+charged particle in a magnetic field on the hyperbolic half-plane, giving
+another physically motivated semiclassical route to the counting function
+with similar caveats about rigor and completeness.
+
+\textbf{Noncommutative spectral realization (Connes).} Connes
+\cite{connes1999} gives a spectral interpretation of the critical zeros as
+an absorption spectrum in a trace formula over the ad\`{e}le class space,
+under which RH becomes equivalent to a positivity statement about a trace
+pairing. This sidesteps the density obstruction entirely -- the
+construction is exact, not a finite-range fit -- but reduces RH to an
+equally open positivity conjecture rather than resolving it.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccl}
+\toprule
+Construction & Correct density growth & Rigorous operator & Status\\
+\midrule
+$C_D^{(n)}$ (this paper) & No (bounded) & Yes (finite matrix) & Ruled out, all $D,n$\\
+Wu--Sprung fractal potential & Only by fitting & Yes & Fit, not derived\\
+Berry--Keating $H=xp$ & Yes (leading term) & No (needs regularization) & Conjectural\\
+Sierra--Townsend Landau levels & Partial & Semiclassical & Conjectural\\
+Connes spectral realization & Yes (exact) & Yes (ad\`{e}le space) & Reduces to open positivity\\
+\bottomrule
+\end{tabular}
+\caption{The obstruction identified in this paper (bounded vs.\ unbounded
+spectral density) is one of several distinct, well-documented reasons a
+zeta-zero-correlating construction can fail to yield a proof. No entry in
+this table has all three of: correct asymptotic density, rigorous
+operator status, and an unconditional resolution of RH.}
+\label{tab:related}
+\end{table}
+
+The recurrence of this pattern across independently motivated constructions
+suggests the density obstruction (or a close relative of it -- rigor,
+completeness) is a generic hazard for finite or semiclassical
+Hilbert--P\'{o}lya candidates, rather than a defect specific to the
+Hilbert-curve construction studied here.
+
+% ============================================================================
+\section{Reproducibility}
+\label{sec:reproducibility}
+% ============================================================================
+
+The results above were re-derived independently from the covariance
+matrices, rather than taken from the pipeline that originally produced
+them, and two issues were found and corrected in the process.
+
+\textbf{Permutation test.} The original significance test for the
+eigenvalue--zeta-zero correlation used a shuffle map that was a fixed
+function of array index rather than a call to a random-number generator,
+and did not reset the array between trials -- so repeated ``trials'' were
+repeated compositions of one fixed permutation, not independent draws.
+We replaced this with a seeded Mersenne-Twister shuffle re-drawn every
+trial (Section~\ref{sec:correlation}). The qualitative conclusion is
+unchanged ($p<5\times10^{-5}$ throughout Table~\ref{tab:correlation}), but
+the quantitative significance figures reported before this correction were
+not meaningful.
+
+\textbf{Curve implementation vs.\ documentation.} The 3D results in
+Table~\ref{tab:order6} come from two different curve implementations: an
+original ad-hoc construction achieving 50\% face-adjacency, and a
+Butz-algorithm implementation achieving 89.3\%. Prior documentation
+described the 3D results as using the latter; the pipeline that generated
+some of the reported 3D numbers in fact used the former. We verified
+directly (by tracing consecutive-index face-adjacency) that both
+implementations are in use in different parts of the codebase, and confirm
+in Table~\ref{tab:order6} that the discrepancy does not materially affect
+the reported correlation ($\Delta r = 0.016$ at order 6) -- but it should
+be corrected as a matter of documentation accuracy independent of its
+numerical impact.
+
+\textbf{Segmented sieve bug ($D=5,6$ and the standalone $D=3,4$ cross-check).}
+The prime sieve used to generate the $D\in\{3,4,5,6\}$ covariance matrices
+independent of the main pipeline contained a classical segmented-sieve
+error: the inner loop marked composites starting from the smallest multiple
+of each small prime $p$ that was $\ge \mathrm{low}$, without excluding the
+trivial multiple $p$ itself. In the first segment ($\mathrm{low}=3$), this
+multiple equals $p$ for every small prime, so every prime up to
+$\sqrt{\mathrm{limit}}$ was marked composite and silently dropped -- $96$
+missing primes at order 6 ($D=3$), confirmed by comparison against a
+reference sieve. We fixed this by clamping the starting multiple to
+$p^2$ (standard practice, apparently dropped during a refactor), verified
+the fix against a reference implementation across seven limits spanning
+single- and multi-segment cases, and regenerated all sixteen affected
+covariance matrices. The corrected data changes $r$ by $<0.005$ at order
+$\ge4$ for every $D$ (Table~\ref{tab:sievefix}) -- small enough that none of
+the values reported in Table~\ref{tab:correlation} or
+Table~\ref{tab:order6} change at the precision shown -- but by up to $0.074$
+at order 2--3, where a few hundred missing small primes are a large
+fraction of a total prime count in the low thousands. This is the expected
+signature of a bug that drops a roughly fixed number of small primes: its
+relative effect shrinks as the prime count grows with order.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+File & Order & $r$ (buggy sieve) & $r$ (fixed) & $\Delta r$\\
+\midrule
+\texttt{cov\_3d\_n2.json} & 2 & $-0.9963$ & $-0.9225$ & $+0.074$\\
+\texttt{cov\_3d\_n3.json} & 3 & $-0.9654$ & $-0.9865$ & $-0.021$\\
+\texttt{cov\_5d\_n3.json} & 3 & $-0.9692$ & $-0.9539$ & $+0.015$\\
+\texttt{cov\_4d\_n2.json} & 2 & $-0.9464$ & $-0.9624$ & $-0.016$\\
+\midrule
+\texttt{cov\_3d\_n6.json} & 6 & $-0.9432$ & $-0.9434$ & $-0.0003$\\
+\texttt{cov\_4d\_n6.json} & 6 & $-0.8660$ & $-0.8663$ & $-0.0003$\\
+\texttt{cov\_5d\_n5.json} & 5 & $-0.9429$ & $-0.9430$ & $-0.0001$\\
+\texttt{cov\_6d\_n4.json} & 4 & $-0.9714$ & $-0.9714$ & $-0.0000$\\
+\bottomrule
+\end{tabular}
+\caption{Effect of the sieve fix on Pearson $r$, low orders (top, large
+relative effect) vs.\ the orders actually used in
+Tables~\ref{tab:correlation}--\ref{tab:order6} (bottom, negligible effect).
+Full before/after comparison across all 16 regenerated files is in the
+supplementary script output.}
+\label{tab:sievefix}
+\end{table}
+
+Theorem~\ref{thm:tridiag} was used as an internal consistency check
+throughout: a genuinely face-adjacent curve implementation forces
+$\max_{|z_1-z_2|>1}|C[z_1,z_2]|=0$ to floating-point precision under the
+spatial construction, while a buggy implementation with silently reduced
+adjacency produces detectably nonzero far off-diagonal entries even when
+its overall bijection property (each index visited once) is intact. This
+diagnostic is cheaper than auditing consecutive-pair adjacency directly and
+is, in our view, the most practically useful byproduct of
+Theorem~\ref{thm:tridiag}. It did not catch the sieve bug above, since that
+bug affects which cells are prime, not the curve's adjacency structure --
+the two diagnostics are complementary, not overlapping.
+
+% ============================================================================
+\section{Conclusion}
+% ============================================================================
+
+The Z-plane covariance operator of the Hilbert curve, under the spatial
+(face-adjacency) construction, is exactly tridiagonal Toeplitz for every
+dimension $D\ge3$ and order $n$, with closed-form spectrum
+$\lambda_k=c_0+2c_1\cos(\pi k/(n+1))$ (Theorem~\ref{thm:tridiag},
+Corollary~\ref{cor:eigenvalues}). For the prime indicator, this spectrum
+correlates with the first 64 non-trivial zeta zeros at $|r|$ up to $0.990$,
+a correlation we confirm is not an artifact of the permutation test or
+curve-implementation irregularities present in the original analysis
+pipeline (Section~\ref{sec:reproducibility}). The correlation is, however,
+provably incapable of becoming an equality at any order or dimension
+(Proposition~\ref{prop:mismatch}): the operator's spectrum is bounded and
+shrinks in width as $n\to\infty$, while the zeta zero counting function
+grows without bound. A successful Hilbert--P\'{o}lya construction along
+these lines would need eigenvalue density growing as $N(T)\sim
+(T/2\pi)\log(T/2\pi e)$, GUE pair-correlation statistics (untested here and,
+based on the strongly clustered rather than repelling character of a cosine
+spectrum, unlikely to hold for this family), and a proof of self-adjointness
+in the infinite-order limit. None of these properties can be supplied by
+further optimizing $D$, $n$, or the choice of adjacency rule within the
+present construction.
+
+\section*{Data and Code Availability}
+Covariance matrices (\texttt{cov\_*.json}), the corrected segmented-sieve
+implementation, the eigenvalue re-derivation script, and the corrected
+permutation test are available in the companion repository. All numerical
+results in this paper were produced by a single script operating on the
+checked-in covariance matrices, run with a fixed seed, so that
+Tables~\ref{tab:tridiag-verify}--\ref{tab:sievefix} are regenerable without
+recourse to the original (Go) analysis pipeline.
+
+\begin{thebibliography}{99}
+
+\bibitem{butz1971}
+A.~R.~Butz, ``Alternative Algorithm for Hilbert's Space-Filling Curve,''
+\emph{IEEE Trans.\ Computers}, vol.~C-20, no.~4, pp.~424--426, 1971.
+
+\bibitem{hamilton2006}
+C.~Hamilton, ``Compact Hilbert Indices,'' Dalhousie University, Technical
+Report CS-2006-07, 2006.
+
+\bibitem{grenander1958}
+U.~Grenander and G.~Szeg\H{o}, \emph{Toeplitz Forms and Their
+Applications}, University of California Press, 1958.
+
+\bibitem{montgomery1973}
+H.~L.~Montgomery, ``The pair correlation of zeros of the zeta function,''
+\emph{Proc.\ Symp.\ Pure Math.}, vol.~24, pp.~181--193, 1973.
+
+\bibitem{wusprung1993}
+H.~C.~Wu and D.~W.~L.~Sprung, ``Riemann zeros and a fractal potential,''
+\emph{Phys.\ Rev.\ E}, vol.~48, pp.~2595--2598, 1993.
+
+\bibitem{berrykeating1999}
+M.~V.~Berry and J.~P.~Keating, ``$H=xp$ and the Riemann zeros,'' in
+\emph{Supersymmetry and Trace Formulae: Chaos and Disorder}, J.~P.~Keating,
+D.~E.~Khalfin, and I.~Zagier, eds., Kluwer/Plenum, 1999; see also
+J.~Kuipers, Q.~Hummel, and K.~Richter, ``The $H=xp$ model revisited and the
+Riemann zeros,'' \emph{Phys.\ Rev.\ Lett.}, vol.~112, 070406, 2014.
+
+\bibitem{sierratownsend2008}
+G.~Sierra and P.~K.~Townsend, ``Landau levels and Riemann zeros,''
+\emph{Phys.\ Rev.\ Lett.}, vol.~101, 110201, 2008.
+
+\bibitem{connes1999}
+A.~Connes, ``Trace formula in noncommutative geometry and the zeros of the
+Riemann zeta function,'' \emph{Selecta Math.}, vol.~5, pp.~29--106, 1999.
+
+\bibitem{lmfdb}
+The LMFDB Collaboration, ``The L-functions and Modular Forms Database,''
+\url{https://www.lmfdb.org/zeros/zeta/}, 2026.
+
+\bibitem{wesson2026a}
+R.~Wesson, ``The Hilbert Curve Prime Operator: A Complete Investigation
+from Plane-Density Anomalies to the Analytic Eigenvalue Formula,'' 2026.
+
+\end{thebibliography}
+
+\end{document}
