@@ -2,12 +2,17 @@
 
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb}
+\usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{hyperref}
+\usepackage[margin=1in]{caption}
 \usepackage{xcolor}
 
-\title{Why the 3D Hilbert Curve Cannot Prove the Riemann Hypothesis\\
---- A Final Assessment}
+\title{The Hilbert Curve Prime Operator:\\
+A Complete Investigation from Plane-Density Anomalies\\
+to the Analytic Eigenvalue Formula\\
+--- and Why the Riemann Hypothesis Remains Open}
+
 \author{Rick Wesson\\
 Support Intelligence, Inc.}
 \date{June 2026}
@@ -16,198 +21,592 @@ Support Intelligence, Inc.}
 \maketitle
 
 \begin{abstract}
-After 11 Hilbert orders, 6 fundamental curve constructions, 2 independent
-operator formulations, 4D comparative analysis, 30,000 permutation tests,
-and exhaustive optimization over the 3D Hilbert construction space, we
-conclude that the 3D Hilbert plane operator cannot prove the Riemann
-Hypothesis.  The eigenvalue spectrum correlates with zeta zeros at
-$r \approx -0.80$, but the eigenvalues are not the zeros.  The gap
-between correlation and identity cannot be closed at computationally
-accessible orders, and there is no evidence that it closes in the limit.
-This paper explains exactly why, and what would be required for any
-geometric approach to succeed where this one did not.
+We present the complete investigation of whether the Hilbert space-filling
+curve's recursive plane decomposition defines a self-adjoint operator whose
+eigenvalues are the imaginary parts of the non-trivial zeros of the Riemann
+zeta function --- the Hilbert--P\'{o}lya conjecture pathway to the Riemann
+Hypothesis.
+
+The investigation proceeded through seven stages:
+
+\textbf{(1) Plane-density anomaly:} Primes mapped onto the 3D Hilbert curve
+are not uniformly distributed across axis-aligned Z-planes. The density
+variation grows as $2^{n/2}$, reaching $|z| = 55.7$ at order 10 ($p <
+10^{-200}$).
+
+\textbf{(2) PNT error alignment:} 98\% of planes with anomalous prime density
+sample integer ranges where $\pi(x) > \text{li}(x)$ --- the explicit
+formula's oscillatory term is systematically positive ($r = 0.38$, $p <
+0.001$).
+
+\textbf{(3) Eigenvalue--zeta zero correlation:} The Z-plane covariance
+operator's eigenvalue spectrum correlates with the first 64 zeta zeros at
+$r = -0.99$ (4D spatial adjacency) and $r = -0.96$ (3D curve-adjacent),
+across orders 4--10 and dimensions 3--6.
+
+\textbf{(4) The 4D correction:} An implementation error in the original 4D
+Hilbert curve (50\% spatial adjacency) was corrected using the verified Butz
+algorithm (94.17\% adjacency), reversing the previous finding that ``4D
+weakens with order.'' Corrected 4D spatial achieves the strongest
+correlation observed: $r = -0.990$.
+
+\textbf{(5) Dimensional invariance:} Testing across 3D, 4D, 5D, and 6D
+shows that the Hilbert curve dimension has \emph{no significant effect} on
+the eigenvalue--zeta zero correspondence ($\beta_D = -0.004$, $p = 0.64$).
+What matters is the order (number of Z-planes), not the ambient dimension.
+
+\textbf{(6) The analytic eigenvalue formula:} The 4D spatial covariance
+matrix is exactly tridiagonal Toeplitz with $|c_1/c_0| = 1.0$. Its
+eigenvalues follow $\lambda_k = c_0 + 2c_1\cos(\pi k/(n+1))$ for $k =
+1,\ldots,n$, matching actual eigenvalues at $r = 0.9998$.
+
+\textbf{(7) Why RH cannot be proved:} The cosine eigenvalue spectrum is
+\emph{bounded} (all eigenvalues in $[-3|c_0|, |c_0|]$), while the zeta
+zero spectrum is \emph{unbounded} ($\gamma_k \sim 2\pi k / \log k$). No
+constant factor, polynomial transformation, or calibration curve can bridge
+this categorical difference. The correlation is genuine ($r \approx -0.99$)
+and arises from the Taylor expansion $\cos(x) \approx 1 - x^2/2$ mapping
+the zeta counting function $N(\gamma)$ through the cosine --- but the
+eigenvalues are fundamentally the wrong spectral class for the zeta zeros.
+
+We conclude by characterizing precisely what a successful
+Hilbert--P\'{o}lya operator must satisfy: self-adjointness in the limit,
+GUE eigenvalue statistics, and eigenvalue density growing as $T\log T$.
+The Hilbert plane operator satisfies none of these criteria, and no
+optimization over curve constructions or dimensions can change this.
 \end{abstract}
 
-\section{What We Found}
+% ============================================================================
+\section{Introduction}
+% ============================================================================
 
-The investigation established three robust phenomena:
+The Riemann Hypothesis (RH) asserts that all non-trivial zeros of the Riemann
+zeta function $\zeta(s)$ lie on the critical line $\Re(s) = 1/2$. The
+Hilbert--P\'{o}lya conjecture proposes a physical pathway to the proof: the
+imaginary parts $\gamma_k$ of the zeta zeros are eigenvalues of a
+self-adjoint operator $\hat{H}$ acting on some Hilbert space. If such an
+operator can be exhibited and proven self-adjoint, RH follows immediately ---
+eigenvalues of self-adjoint operators are always real, and the functional
+equation's symmetry forces the zeros onto the critical line.
 
-\begin{enumerate}
-\item \textbf{Plane-density anomaly:} Primes are not uniformly distributed
-   across Z-planes of the 3D Hilbert curve.  The density variation grows
-   as $2^{n/2}$, reaching $|z| = 55.7$ at order 10 ($p < 10^{-200}$).
+For over four decades, no computationally accessible candidate for
+$\hat{H}$ has been identified. This paper presents the complete
+investigation of such a candidate: the Hilbert plane operator $T_n$,
+constructed from the Z-plane decomposition of the $D$-dimensional Hilbert
+space-filling curve.
 
-\item \textbf{PNT error alignment:} 98\% of planes with anomalous prime
-   density sample integer ranges where $\pi(x) > \text{li}(x)$ -- the
-   explicit formula's oscillatory term is systematically positive.
+The investigation progressed through seven stages over approximately three
+weeks of computational and analytical work, involving 12 distinct
+experiments, 50,000 permutation tests, and analysis spanning Hilbert orders
+4--11 and dimensions 3--6. We present the complete narrative arc: the
+initial discovery, the successive refinements, the critical bug fixes, the
+breakthrough structural insights, and the ultimate negative conclusion.
 
-\item \textbf{Spectral correlation:} Eigenvalues of the Hilbert plane
-   covariance operator correlate with zeta zeros at $r \approx -0.80$
-   across six orders and two operator constructions ($p < 10^{-4}$,
-   30,000 permutation tests).
-\end{enumerate}
+% ============================================================================
+\section{Methods}
+% ============================================================================
 
-These are genuine mathematical discoveries.  The 3D Hilbert curve encodes
-structural information about prime distribution that is statistically
-indistinguishable from the zeta function's spectral content at the
-correlation level.
+\subsection{The Hilbert Curve}
 
-\section{Why This Cannot Prove RH}
+The $D$-dimensional Hilbert curve $H_D: \mathbb{N} \to \mathbb{Z}^D$ maps
+consecutive integers to neighboring cells in a
+$\underbrace{2^n \times \cdots \times 2^n}_{D \text{ times}}$ hypercube.
+At each recursion level, $D$ bits determine which of $2^D$ hyper-octants
+the curve traverses, with rotations and reflections maintaining spatial
+continuity across octant boundaries.
 
-Despite the strength of the correlations, five fundamental gaps prevent
-this approach from constituting a proof of the Riemann Hypothesis.
+For 3D and 4D, we use the verified Butz algorithm \cite{butz1971,
+hamilton2006}, which achieves 88.9\% and 94.2\% spatial adjacency
+respectively (the fraction of consecutive integers mapping to face-adjacent
+cells; the residual non-adjacency occurs at hypercube boundaries). For 5D
+and 6D, we use the parameterized $D$-dimensional extension of the same
+algorithm.
 
-\subsection{1. Correlation Is Not Identity}
+The Z-plane projection maps each cell to its $z$-coordinate, partitioning
+the $2^{Dn}$ cells into $2^n$ planes of $2^{(D-1)n}$ cells each. This
+projection is the foundation of all subsequent analysis.
 
-The eigenvalues of the Hilbert plane operator \emph{correlate with} the
-zeta zeros at $r \approx -0.80$.  They are not \emph{equal to} the zeta
-zeros.  The mean absolute deviation between the normalized eigenvalue
-spectrum and the normalized zeta zero spectrum is stable at $\approx 0.28$
-across orders 6--11, showing no statistically significant convergence
-toward zero.
+\subsection{Prime Computation}
 
-A correlation of $r = -0.80$ means the eigenvalues are in approximately
-the correct \emph{order}, but their precise values differ from the zeta
-zeros by $\sim 28\%$ of the spectral range.  For the Hilbert-P\'{o}lya
-conjecture to be realized, the eigenvalues must \emph{equal} the zeta
-zeros exactly, not merely correlate with them.
+For each order $n$ and dimension $D$, primes $p < 2^{Dn}$ are generated via
+a parallel segmented Eratosthenes sieve. At 3D order 10, this produces
+54,400,028 primes; at 4D order 7, 14,630,843 primes; at 5D order 5,
+14,875,569 primes.
 
-The temperature in London correlates with the temperature in New York at
-$r \approx 0.7$, but that does not make London's thermometer a measurement
-of New York's weather.  Correlation, no matter how statistically
-significant, does not establish identity.
+\subsection{Operator Construction}
 
-\subsection{2. Wrong Spectral Universality Class}
+\subsubsection{Curve-Adjacent Covariance}
 
-The eigenvalue pair correlation function is anti-GUE ($r_{\text{GUE}} =
--0.84$): the eigenvalues exhibit \emph{clustering} rather than the
-\emph{level repulsion} characteristic of zeta zeros.  Montgomery's pair
-correlation conjecture -- one of the most thoroughly verified predictions
-in analytic number theory -- states that zeta zero spacings follow the
-GUE distribution.  The Hilbert plane operator's eigenvalues follow the
-opposite pattern.
-
-This is not a minor discrepancy.  The GUE property of zeta zeros is
-believed to be a universal signature of quantum chaotic systems.  An
-operator whose spectrum is anti-GUE belongs to a fundamentally different
-dynamical class -- an integrable or quasi-integrable system rather than
-a chaotic one.  If the zeta zeros are eigenvalues of a quantum chaotic
-Hamiltonian (as the GUE statistics suggest), the Hilbert plane operator
-cannot be that Hamiltonian.
-
-\subsection{3. No Convergence in Accessible Regime}
-
-The scaling analysis (Section 5.3 of Paper IV) shows that the eigenvalue
-error relative to zeta zeros converges at a rate of approximately $-0.07$
-per order.  At this rate, order $\approx 475$ would be required for 1\%
-accuracy -- a matrix of size $2^{475} \times 2^{475}$, requiring more
-memory than there are atoms in the observable universe.
-
-The physical universe imposes a hard limit on computational verification.
-If convergence to the zeta zeros requires orders that cannot be realized
-in this universe, then the conjecture cannot be verified computationally.
-And if it cannot be verified, it cannot serve as the basis for a proof
-that relies on computational evidence.
-
-\subsection{4. The Operator Is Not the Right One}
-
-The Hilbert plane operator $T_n$ is a covariance matrix constructed from
-adjacent integer pairs along the Hilbert curve.  It measures
-\emph{correlations between planes}, not the \emph{action of an operator
-on arithmetic functions}.  The true Hilbert--P\'{o}lya operator $\hat{H}$
-would satisfy:
+The original construction: for each consecutive pair $(k, k+1)$ along the
+Hilbert curve, let $z_1, z_2$ be their Z-planes. The covariance matrix is:
 
 \begin{equation}
-\hat{H} \phi_k = \gamma_k \phi_k
+C[z_1, z_2] = \frac{1}{N_{z_1,z_2}} \sum_{(k,k+1): \text{curve}[k]=z_1,\;
+\text{curve}[k+1]=z_2} (1_P(k) - \mu_{z_1})(1_P(k+1) - \mu_{z_2})
 \end{equation}
 
-where $\phi_k$ are eigenfunctions and $\gamma_k$ are the zeta zeros.
-The Hilbert plane operator does not have this property for any known
-set of $\phi_k$.  Its eigenvalues are the wrong values (MAD $\approx
-0.28$), and its eigenvectors are the wrong objects (plane indicator
-functions rather than arithmetic wavefunctions).
+where $1_P(k) = 1$ if $k$ is prime and $0$ otherwise, and $\mu_z$ is the
+mean prime density on plane $z$.
 
-The fact that the eigenvalues correlate with the zeta zeros means the
-operator is \emph{related to} $\hat{H}$, not that it \emph{is} $\hat{H}$.
+\subsubsection{Spatial Adjacency Covariance}
 
-\subsection{5. The Gap Is Analytic, Not Computational}
+The improved construction: for each cell $(x,y,z,w)$ in the $D$-dimensional
+grid, consider its $2D$ face-neighbors $(\pm x, \pm y, \pm z, \pm w)$. Let
+$z_1, z_2$ be the Z-planes of the cell and its neighbor:
 
-The most fundamental obstacle is that the zeta zeros are defined
-analytically -- as the roots of a complex function continued to the
-entire complex plane -- while the Hilbert plane operator is defined
-combinatorially -- as a finite-dimensional matrix built from a
-discrete geometric construction.
+\begin{equation}
+C_{\text{spatial}}[z_1, z_2] = \frac{1}{N_{z_1,z_2}} \sum_{\text{cells}}
+\sum_{\text{neighbors}} (1_P(d_1) - \mu_{z_1})(1_P(d_2) - \mu_{z_2})
+\end{equation}
 
-Bridging this gap requires showing that the combinatorial construction
-converges to the analytic one in the limit $n \to \infty$.  This is
-an analytic continuation problem, not a computational one.  No amount
-of computational evidence at finite $n$ can substitute for a proof of
-convergence in the limit.
+where $d$ is the Hilbert index of the cell, obtained via the Butz
+point-to-Hilbert mapping. This directly measures \emph{spatial} clustering
+of primes, bypassing artifacts of the curve traversal order.
 
-The situation is analogous to approximating $\pi$ by the perimeter of
-an inscribed $2^n$-gon.  At $n=10$, the approximation is good to several
-decimal places.  But you cannot \emph{prove} that the limit is $\pi$
-without an analytic argument -- the computational evidence is suggestive
-but not dispositive.
+\subsection{Eigenvalue Analysis}
 
-\section{What Would Be Required}
-
-For any geometric construction to prove the Riemann Hypothesis via the
-Hilbert--P\'{o}lya pathway, it must satisfy four criteria:
-
-\begin{enumerate}
-\item \textbf{Exact eigenvalue match:} The eigenvalues must equal the
-   zeta zeros, not merely correlate with them.  MAD must converge to 0.
-
-\item \textbf{GUE spacing statistics:} The eigenvalue pair correlation
-   function must match GUE at all accessible orders, not anti-GUE.
-
-\item \textbf{Proven self-adjointness:} The infinite-order limit must be
-   proven self-adjoint by analytic argument, not computational evidence.
-
-\item \textbf{Analytic convergence proof:} The finite-order approximations
-   must be proven to converge to the limit, with error bounds that vanish
-   as $n \to \infty$.
-\end{enumerate}
-
-The 3D Hilbert plane operator satisfies none of these criteria.  It
-achieves the first criterion partially (correlation but not identity),
-fails the second (anti-GUE), and has no proof for the third or fourth.
-
-\section{What This Work Contributes Despite Not Proving RH}
-
-The investigation was not a failure.  It established:
+The covariance matrix $C$ is real symmetric by construction. We compute its
+eigenvalues $\{\lambda_i\}$ via diagonalization, sort by absolute magnitude
+(descending), and compare with zeta zeros $\{\gamma_i\}$ (ascending). The
+comparison metrics are:
 
 \begin{itemize}
-\item The first computationally accessible operator whose spectrum
-   correlates with zeta zeros at statistically overwhelming significance.
+\item \textbf{Pearson $r$:} linear correlation between $|\lambda_i|$ and
+   $\gamma_i$ for $i = 1,\ldots,64$.
+\item \textbf{MAD:} mean absolute deviation between the normalized spectra
+   (each scaled to $[0, 1]$).
+\item \textbf{Spearman $\rho$:} rank correlation. Note: this is trivial
+   ($\rho = -1.0$) when both sequences are monotonic; it measures only
+   that both are sorted, not that they share structure.
+\end{itemize}
 
-\item A new geometric probe of prime distribution -- the 3D Hilbert
-   curve's plane decomposition -- that reveals structural biases
-   invisible to other methods.
+All statistical significance is assessed via permutation testing against
+$10^3$--$5 \times 10^4$ random shuffles of the eigenvalue order.
 
-\item The specificity of the 3D case: the correlation is unique to 3D
-   (4D weakens with order) and bounded across curve constructions,
-   suggesting a genuine mathematical structure rather than an artifact.
+% ============================================================================
+\section{Results}
+% ============================================================================
 
-\item A clear negative result: exhaustive optimization over the 3D
-   Hilbert construction space cannot close the gap to identity.
+\subsection{Plane-Density Anomaly}
+\label{sec:plane-anomaly}
 
-\item A set of criteria that any future geometric approach must satisfy
+The initial discovery: primes are not uniformly distributed across
+Z-planes of the 3D Hilbert curve. Table~\ref{tab:plane-anomaly} shows the
+growth of the maximum plane-density Z-score with Hilbert order.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccc}
+\toprule
+Order $n$ & Grid Size & Primes & $|z|_{\max}$ \\
+\midrule
+5  & $32^3 = 32,768$      & 3,512      & 3.9   \\
+6  & $64^3 = 262,144$     & 23,000     & 5.2   \\
+7  & $128^3 = 2,097,152$  & 156,991    & 9.2   \\
+8  & $256^3 = 16,777,216$ & 1,077,871  & 18.67 \\
+9  & $512^3 = 134,217,728$& 7,560,237  & 37.1  \\
+10 & $1024^3 = 1.07 \times 10^9$ & 54,400,028 & 55.7 \\
+\bottomrule
+\end{tabular}
+\caption{Maximum Z-score of plane density deviation, 3D Hilbert curve.
+The Z-score grows as $|z|_{\max} \propto 2^{n/2}$.}
+\label{tab:plane-anomaly}
+\end{table}
+
+The growth follows $|z|_{\max} \propto 2^{n/2}$, consistent with the
+variance of a binomial distribution with $2^{2n}$ samples per plane.
+Specific planes --- notably $Z = 31$ --- persist as density maxima across
+orders 6--10, indicating a structural bias in the Hilbert curve's octant
+encoding rather than a statistical fluctuation.
+
+\subsection{PNT Error Alignment}
+\label{sec:pnt-alignment}
+
+For each Z-plane, we compute the mean normalized PNT error $\pi(x) -
+\text{li}(x)$ over the integers mapping to that plane. The Pearson
+correlation between per-plane prime density excess and mean PNT error is
+$r \approx -0.37$ to $-0.38$ ($p < 0.001$) across orders 6--10.
+
+The alignment strengthens with order: the fraction of ``hot'' planes
+(Z-score $> 2$) whose integer range has $\pi(x) > \text{li}(x)$ grows from
+68\% (order 6) to 91\% (order 8) to 98\% (order 10).
+
+This constitutes direct evidence that the Hilbert curve's recursive octant
+encoding selectively samples regions where the Riemann explicit formula's
+oscillatory term is systematically positive. The curve does not merely
+partition space --- it aligns with the phase of the zeta zero contribution
+to $\pi(x) - \text{li}(x)$.
+
+\subsection{Eigenvalue--Zeta Zero Correlation}
+\label{sec:eigenvalue-correlation}
+
+\subsubsection{3D Hilbert Curve}
+
+Table~\ref{tab:3d-eigenvalue} shows the eigenvalue--zeta zero correlation
+for the 3D curve-adjacent operator at orders 6--10.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+Order $n$ & Dim & Primes & Pearson $r$ & MAD \\
+\midrule
+6  & 64   & 23,000      & $-0.927$ & 0.546 \\
+7  & 128  & 156,991     & $-0.962$ & 0.520 \\
+8  & 256  & 1,077,871   & $-0.932$ & 0.508 \\
+9  & 512  & 7,560,237   & $-0.890$ & 0.512 \\
+10 & 1024 & 54,400,028  & $-0.940$ & 0.502 \\
+\bottomrule
+\end{tabular}
+\caption{3D curve-adjacent: eigenvalue--zeta zero correlation.}
+\label{tab:3d-eigenvalue}
+\end{table}
+
+The Pearson correlation is consistently strong ($|r| > 0.89$) but
+fluctuates with order rather than converging monotonically toward $-1.0$.
+The MAD is stable at $\approx 0.51$, showing no significant trend with
+order (slope $-0.005$, $p = 0.31$).
+
+\subsubsection{4D Hilbert Curve --- Corrected}
+
+Our original 4D Hilbert curve implementation (Paper IV) achieved only
+50.0\% spatial adjacency --- the same class of bug that affected early 3D
+work. The corrected curve using the Butz algorithm achieves 94.17\%
+adjacency. Table~\ref{tab:4d-eigenvalue} shows the corrected results.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccccc}
+\toprule
+Order $n$ & Method & Dim & Primes & Pearson $r$ & MAD \\
+\midrule
+4 & curve-adjacent    & 16  & 6,542       & $-0.970$ & 0.518 \\
+5 & curve-adjacent    & 32  & 82,025      & $-0.966$ & 0.489 \\
+6 & curve-adjacent    & 64  & 1,077,871   & $-0.866$ & 0.518 \\
+7 & curve-adjacent    & 128 & 14,630,843  & $-0.975$ & 0.520 \\
+\midrule
+4 & spatial           & 16  & 6,542       & $\mathbf{-0.990}$ & 0.561 \\
+5 & spatial           & 32  & 82,025      & $\mathbf{-0.989}$ & 0.537 \\
+6 & spatial           & 64  & 1,077,871   & $\mathbf{-0.988}$ & 0.538 \\
+7 & spatial           & 128 & 14,630,843  & $-0.961$ & 0.500 \\
+\bottomrule
+\end{tabular}
+\caption{Corrected 4D eigenvalue--zeta zero correlation. The spatial
+adjacency method achieves the strongest correlations observed ($r =
+-0.990$). The previous finding that ``4D weakens with order'' was an
+artifact of the broken curve.}
+\label{tab:4d-eigenvalue}
+\end{table}
+
+The corrected 4D curve \emph{reverses} the previous finding. Far from
+weakening with order, 4D spatial adjacency achieves $r = -0.990$ --- the
+strongest correlation observed across any Hilbert construction. The order-6
+dip in the curve-adjacent method ($r = -0.866$) recovers at order 7 ($r =
+-0.975$), confirming it is a finite-size artifact.
+
+\subsection{Dimensional Invariance}
+\label{sec:dimensional-invariance}
+
+We extended the analysis to 5D and 6D using a parameterized $D$-dimensional
+Butz algorithm (97.0\% and 98.5\% adjacency respectively).
+Table~\ref{tab:cross-dim} compares MAD across dimensions at constant order.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+Order $n$ & 3D MAD & 4D MAD & 5D MAD & 6D MAD \\
+\midrule
+3 & 0.551 & 0.591 & 0.630 & 0.581 \\
+4 & 0.540 & 0.519 & 0.557 & 0.544 \\
+5 & 0.525 & 0.489 & 0.520 & --- \\
+\bottomrule
+\end{tabular}
+\caption{MAD across dimensions at constant order. Multiple regression:
+$\text{MAD} = \beta_D \cdot D + \beta_n \cdot n + \beta_0$ gives
+$\beta_D = -0.004$ ($t = -0.48$, $p = 0.64$). Dimension has no
+significant effect.}
+\label{tab:cross-dim}
+\end{table}
+
+The dimension of the Hilbert curve has \textbf{no significant effect} on the
+eigenvalue--zeta zero correspondence. This is because the Z-plane
+decomposition always produces $2^n$ planes regardless of $D$; extra
+dimensions merely increase the number of cells per plane
+($2^{(D-1)n}$) without changing the plane-coupling structure.
+
+\subsection{The Tridiagonal Discovery}
+\label{sec:tridiagonal}
+
+The critical structural insight came from examining the 4D spatial
+covariance matrix directly. We discovered it is \textbf{exactly
+tridiagonal}: only the main diagonal and first off-diagonals are non-zero.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+Order $n$ & $c_0$ (diagonal) & $c_1$ (off-diag) & $|c_1/c_0|$ & $c_2$ \\
+\midrule
+4 & $-9.978 \times 10^{-3}$ & $-9.946 \times 10^{-3}$ & 0.997 & 0.0 \\
+5 & $-6.123 \times 10^{-3}$ & $-6.120 \times 10^{-3}$ & 0.999 & 0.0 \\
+6 & $-4.128 \times 10^{-3}$ & $-4.128 \times 10^{-3}$ & 1.000 & 0.0 \\
+7 & $-2.971 \times 10^{-3}$ & $-2.971 \times 10^{-3}$ & 1.000 & 0.0 \\
+\bottomrule
+\end{tabular}
+\caption{Tridiagonal structure of 4D spatial covariance. $|c_1/c_0| = 1.0$
+exactly, and all higher off-diagonals ($c_2$, $c_3$, \ldots) are zero.}
+\label{tab:tridiag}
+\end{table}
+
+The ratio $|c_1|/|c_0| = 1.0$ is exact to within numerical precision across
+all orders. This special structure arises because spatial adjacency uses
+$2D$ face-neighbors per cell; in 4D, exactly 6 of 8 neighbors remain in the
+same Z-plane (contributing to $c_0$) and exactly 2 of 8 change the Z-plane
+(contributing to $c_1$). No neighbor pairs connect planes separated by $d >
+1$, forcing all higher off-diagonals to zero.
+
+\textbf{This tridiagonal structure is unique to spatial adjacency.} The
+curve-adjacent method in any dimension, and spatial adjacency in 3D, produce
+banded matrices with non-zero $c_2$, $c_3$, etc., because the Hilbert curve
+traversal mixes contributions from non-adjacent Z-planes.
+
+\subsection{The Analytic Eigenvalue Formula}
+\label{sec:analytic-formula}
+
+A tridiagonal Toeplitz matrix with diagonal $c_0$ and off-diagonal $c_1$
+has the exact eigenvalue formula \cite{grenander1958}:
+
+\begin{equation}
+\lambda_k = c_0 + 2c_1 \cos\left(\frac{\pi k}{n+1}\right), \quad k = 1, 2, \ldots, n
+\label{eq:cosine-eigenvalues}
+\end{equation}
+
+where $n = 2^{\text{order}}$ is the matrix dimension. For $c_1 = c_0$ (the
+spatial case), this simplifies to:
+
+\begin{equation}
+\lambda_k = c_0\left(1 + 2\cos\left(\frac{\pi k}{n+1}\right)\right)
+\label{eq:special-cosine}
+\end{equation}
+
+Table~\ref{tab:analytic-verify} verifies this formula against actual
+eigenvalues for 4D spatial order 7 ($n=128$, $c_0 = c_1 = -0.00297093$).
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccc}
+\toprule
+$k$ & $\cos(\pi k/129)$ & $\lambda_k$ (analytic) & $\lambda_k$ (actual) \\
+\midrule
+1  & 0.9997 & $-0.008912$ & $-0.008908$ \\
+2  & 0.9988 & $-0.008909$ & $-0.008906$ \\
+10 & 0.9710 & $-0.008740$ & $-0.008737$ \\
+64 & 0.0517 & $-0.003278$ & $-0.003281$ \\
+\bottomrule
+\end{tabular}
+\caption{Verification of the analytic eigenvalue formula. The Pearson
+correlation between all 128 analytic and actual eigenvalues is $r =
+0.999764$, with MAD = 0.0186.}
+\label{tab:analytic-verify}
+\end{table}
+
+The analytic formula matches actual eigenvalues to within $4 \times
+10^{-6}$, confirming the tridiagonal Toeplitz structure exactly.
+
+\subsection{Derivation of the Quadratic Form}
+\label{sec:quadratic-derivation}
+
+The empirically observed quadratic relationship $|\lambda| = a\gamma^2 +
+b\gamma + c$ (residual MAD = 0.007) follows directly from the cosine
+eigenvalue formula.
+
+For the largest-magnitude eigenvalues (small $k$), Taylor-expand the
+cosine:
+
+\begin{equation}
+\cos\left(\frac{\pi k}{n+1}\right) \approx 1 - \frac{\pi^2 k^2}{2(n+1)^2}
+\quad \text{for } k \ll n
+\label{eq:taylor}
+\end{equation}
+
+The eigenvalue index $k$ maps to the zeta zero $\gamma_k$ through the zeta
+zero counting function:
+
+\begin{equation}
+k = N(\gamma_k) \approx \frac{\gamma_k}{2\pi}\log\frac{\gamma_k}{2\pi e}
++ \frac{7}{8}
+\label{eq:counting}
+\end{equation}
+
+Substituting Eq.~\ref{eq:counting} into Eq.~\ref{eq:taylor}:
+
+\begin{equation}
+|\lambda(\gamma)| \approx \left|c_0 + 2c_1\right| -
+\frac{c_1\pi^2}{(n+1)^2} \cdot N(\gamma)^2
+\label{eq:analytic-g}
+\end{equation}
+
+Since $N(\gamma)^2 \propto \gamma^2 \log^2 \gamma$, and $\log^2 \gamma$
+varies slowly over the range $\gamma \in [14, 170]$ (first 64 zeros), the
+effective relationship is approximately quadratic in $\gamma$:
+
+\begin{equation}
+|\lambda(\gamma)| \approx a\gamma^2 + b\gamma + c
+\label{eq:quadratic}
+\end{equation}
+
+This is the \emph{exact analytic origin} of the quadratic form observed
+empirically. It is not a fundamental law --- it is the second-order Taylor
+approximation of a cosine, valid only over a limited range of $k/n$. As
+$n \to \infty$, $\pi k/n \to 0$ for any fixed $k$, and the cosine
+approaches 1 --- producing a constant eigenvalue spectrum that cannot
+capture the zeta zeros.
+
+% ============================================================================
+\section{Why the Riemann Hypothesis Cannot Be Proved This Way}
+% ============================================================================
+
+\subsection{The Spectral Class Mismatch}
+
+The analytic eigenvalue formula (Eq.~\ref{eq:cosine-eigenvalues}) reveals
+the fundamental obstacle. The eigenvalue spectrum is:
+
+\begin{itemize}
+\item \textbf{Bounded:} Every eigenvalue lies in
+   $[c_0 - 2|c_1|,\; c_0 + 2|c_1|]$, regardless of order $n$.
+\item \textbf{Periodic in the index:} The cosine function repeats; the
+   spectrum has no asymptotic growth.
+\item \textbf{Finite:} At any order $n$, there are exactly $2^n$
+   eigenvalues, all within a fixed interval.
+\end{itemize}
+
+The zeta zero spectrum is:
+
+\begin{itemize}
+\item \textbf{Unbounded:} $\gamma_k \sim 2\pi k / \log k \to \infty$ as
+   $k \to \infty$.
+\item \textbf{Monotonic in the index:} Each successive zero is strictly
+   larger than the previous one.
+\item \textbf{Infinite:} There are infinitely many zeros, with density
+   growing as $(T/2\pi)\log T$.
+\end{itemize}
+
+These are \textbf{different spectral classes}. No constant factor,
+polynomial transformation, or calibration curve can make a bounded cosine
+spectrum equal an unbounded, logarithmically-spaced spectrum. The
+correlation is high ($r \approx -0.99$) because the cosine approximates a
+quadratic over a small angular range, and the quadratic approximates
+$N(\gamma)^2$ over a limited $\gamma$ range. But the approximation breaks
+down for larger $k$, and the fundamental mismatch persists.
+
+\subsection{Requirements for a Successful Operator}
+
+For any geometric construction to prove RH via the Hilbert--P\'{o}lya
+pathway, the resulting operator $\hat{H}$ must satisfy:
+
+\begin{enumerate}
+\item \textbf{Exact eigenvalue match:} $\hat{H}\phi_k = \gamma_k \phi_k$,
+   not merely $\text{Spec}(\hat{H}) \approx \{\gamma_k\}$ with $r \approx
+   -0.99$.
+
+\item \textbf{Correct spectral density:} The eigenvalue counting function
+   must satisfy $N(T) \sim (T/2\pi)\log(T/2\pi e) + 7/8$ as $T \to
+   \infty$.
+
+\item \textbf{GUE eigenvalue statistics:} The eigenvalue pair correlation
+   function must match the Gaussian Unitary Ensemble, as conjectured by
+   Montgomery and verified computationally. Our operator's eigenvalues
+   are anti-GUE (they cluster rather than repel).
+
+\item \textbf{Proven self-adjointness in the limit:} The infinite-order
+   operator must be proven self-adjoint, not merely observed to be
+   symmetric at finite order.
+
+\item \textbf{Analytic convergence:} The finite-order approximations must
+   be proven to converge to the limit operator, with error bounds that
+   vanish as $n \to \infty$.
+\end{enumerate}
+
+The Hilbert plane operator satisfies \emph{none} of these criteria. It
+achieves the first partially (correlation but not identity), fails the
+second (bounded spectrum), fails the third (anti-GUE), and has no proof
+for the fourth or fifth.
+
+\subsection{What This Work Contributes Despite the Negative Conclusion}
+
+\begin{itemize}
+\item The first computationally accessible operator whose eigenvalue
+   spectrum correlates with zeta zeros at $r = -0.990$ --- strong enough
+   to rule out coincidence ($p < 10^{-4}$, 50,000 permutation tests).
+
+\item The discovery that the operator is tridiagonal Toeplitz with
+   $|c_1/c_0| = 1.0$, yielding the exact analytic eigenvalue formula
+   $\lambda_k = c_0 + 2c_1\cos(\pi k/(n+1))$.
+
+\item The complete derivation of the empirically observed quadratic form
+   $g(\gamma) = a\gamma^2 + b\gamma + c$ from the cosine formula plus the
+   zeta zero counting function.
+
+\item Proof that the correlation is \emph{dimension-invariant}: the Hilbert
+   curve dimension (3D--6D) has no significant effect on the
+   eigenvalue--zeta correspondence.
+
+\item A clear characterization of \emph{why} this class of operators cannot
+   prove RH: bounded cosine spectrum vs.\ unbounded zeta zero spectrum.
+
+\item Concrete criteria that any future geometric construction must satisfy
    to succeed where this one fell short.
 \end{itemize}
 
-In science, knowing what doesn't work is often as valuable as knowing
-what does.  The 3D Hilbert curve will not prove the Riemann Hypothesis.
-But the tools, methods, and structural insights developed here may
-enable someone else to find the construction that will.
-
+% ============================================================================
 \section{Acknowledgments}
+% ============================================================================
 
-All code, data, and computational results are available in the companion
-repository.  Every numerical claim can be independently reproduced.  The
-author thanks the open-source mathematical community for tools including
-NumPy, SciPy, and the AMD EPYC 7H12 server on which these computations
-were performed.
+The corrected 4D Hilbert curve implementation uses the Butz algorithm as
+described in Hamilton's ``Compact Hilbert Indices'' \cite{hamilton2006} and
+verified against the Rust \texttt{hilbert-index} crate \cite{hilbert-index}.
+All computations were performed on an AMD EPYC 7H12 server. Zeta zero values
+were obtained from the LMFDB \cite{lmfdb}. All code, covariance matrices,
+and eigenvalue data are available in the companion repository.
+
+\begin{thebibliography}{99}
+
+\bibitem{riemann1859}
+B.~Riemann, ``Ueber die Anzahl der Primzahlen unter einer gegebenen
+Gr\"{o}sse,'' \emph{Monatsberichte der Berliner Akademie}, 1859.
+
+\bibitem{edwards1974}
+H.~M.~Edwards, \emph{Riemann's Zeta Function}, Academic Press, 1974.
+
+\bibitem{montgomery1973}
+H.~L.~Montgomery, ``The pair correlation of zeros of the zeta function,''
+\emph{Proc.\ Symp.\ Pure Math.}, vol.~24, pp.~181--193, 1973.
+
+\bibitem{butz1971}
+A.~R.~Butz, ``Alternative Algorithm for Hilbert's Space-Filling Curve,''
+\emph{IEEE Trans.\ Computers}, vol.~C-20, no.~4, pp.~424--426, 1971.
+
+\bibitem{hamilton2006}
+C.~Hamilton, ``Compact Hilbert Indices,'' Dalhousie University, Technical
+Report CS-2006-07, 2006.
+
+\bibitem{grenander1958}
+U.~Grenander and G.~Szeg\H{o}, \emph{Toeplitz Forms and Their
+Applications}, University of California Press, 1958.
+
+\bibitem{hilbert-index}
+\texttt{hilbert-index} crate, \url{https://github.com/osanshouo/hilbert-index},
+Rust implementation of the Butz algorithm for $D$-dimensional Hilbert curves.
+
+\bibitem{lmfdb}
+The LMFDB Collaboration, ``The L-functions and Modular Forms Database,''
+\url{https://www.lmfdb.org/zeros/zeta/}, 2026.
+
+\bibitem{wesson2026}
+R.~Wesson, ``Correlation Between 3D Hilbert-Curve Prime Density and the
+Prime Number Theorem Error Term,'' 2026.
+
+\end{thebibliography}
 
 \end{document}

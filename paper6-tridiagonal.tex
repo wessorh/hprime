@@ -1,0 +1,254 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{A Note on the Z-Plane Covariance Structure\\
+of the Hilbert Space-Filling Curve}
+
+\author{Rick Wesson\\
+Support Intelligence, Inc.}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We observe that the Z-plane spatial covariance matrix of the
+$D$-dimensional Hilbert curve is tridiagonal: all entries $C[z, z \pm d]$
+for $d > 1$ are identically zero. This follows directly from
+face-adjacency --- no spatial neighbor pair connects Z-planes separated by
+more than one unit. Because the matrix is also Toeplitz (constant diagonal
+and off-diagonal), its eigendecomposition is the known result for
+tridiagonal Toeplitz matrices \cite{grenander1958}: $\lambda_k = c_0 +
+2c_1\cos(\pi k/(n+1))$ with eigenvectors $v_k[j] = \sin(\pi k j/(n+1))$.
+The formula matches numerical computation at $r > 0.98$ across orders
+4--7. Practical consequences include a diagnostic for spatial continuity
+of space-filling curves and an exact bound on cross-plane correlation for
+spatial indexing.
+\end{abstract}
+
+% ============================================================================
+\section{The Observation}
+% ============================================================================
+
+The Hilbert curve $H_D: \mathbb{N} \to \mathbb{Z}^D$ \cite{hilbert1891}
+maps consecutive integers to face-adjacent cells in a $D$-dimensional
+hypercube of side $2^n$. Project onto the $z$-axis: each cell is assigned
+to Z-plane $z = x_3$, partitioning the $2^{Dn}$ cells into $n_z = 2^n$
+planes of $2^{(D-1)n}$ cells each.
+
+For a scalar function $f$ on the curve, let $\mu_z$ be the mean of $f$ on
+plane $z$. Define the spatial covariance between planes using the $2D$
+face-neighbors of each cell:
+
+\begin{equation}
+C[z_1, z_2] = \frac{1}{N_{z_1,z_2}} \sum_{\text{cells } c}
+\sum_{\text{neighbors } c'} (f(d_c) - \mu_{z_1})(f(d_{c'}) - \mu_{z_2})
+\label{eq:cov}
+\end{equation}
+
+where $d_c$ is the Hilbert index of cell $c$, the inner sum is over the
+$2D$ face-neighbors, and $N_{z_1,z_2}$ is the number of contributing pairs.
+
+\textbf{Observation.} $C[z_1, z_2] = 0$ for all $|z_1 - z_2| > 1$.
+
+\textit{Reasoning.} A face-neighbor changes exactly one coordinate by
+$\pm 1$. The Z-coordinate is $x_3$. For the $2(D-1)$ neighbors in
+directions other than $\pm z$, the Z-coordinate is unchanged --- the
+neighbor stays in the same plane. For the 2 neighbors in the $\pm z$
+direction, the Z-coordinate changes by $\pm 1$ --- the neighbor moves to
+an adjacent plane. No face-neighbor changes the Z-coordinate by 2 or more.
+Therefore no spatial neighbor pair connects planes at distance $d > 1$.
+
+This holds for any dimension $D \geq 3$, any order $n$, and any function
+$f$. It is a geometric property of face-adjacency, not a statistical
+property of $f$.
+
+\section{Consequences}
+
+\subsection{Tridiagonal Toeplitz Structure}
+
+Since $C[z_1, z_2]$ depends only on $|z_1 - z_2|$ (the underlying grid is
+translation-invariant in the interior), the matrix is Toeplitz:
+$C[z,z] \approx c_0$ for all $z$, and $C[z,z\pm 1] \approx c_1$ for all
+$z$. With all other entries zero, $C$ is tridiagonal Toeplitz.
+
+For the prime indicator $f = 1_P$ in 4D, we measure:
+
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+$n$ & $c_0$ & $c_1$ & $|c_1/c_0|$ \\
+\midrule
+4  & $-9.978 \times 10^{-3}$ & $-9.946 \times 10^{-3}$ & 0.997 \\
+5  & $-6.123 \times 10^{-3}$ & $-6.120 \times 10^{-3}$ & 0.999 \\
+6  & $-4.128 \times 10^{-3}$ & $-4.128 \times 10^{-3}$ & 1.000 \\
+7  & $-2.971 \times 10^{-3}$ & $-2.971 \times 10^{-3}$ & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The ratio $|c_1/c_0| \approx 1.0$ follows from the normalization: the
+diagonal averages over $2(D-1) = 6$ same-plane neighbors per cell, while
+the off-diagonal averages over 2 $\pm z$ neighbors; after dividing by
+pair count, both estimate $\text{Var}[f]$. The ratio approaching 1.0
+confirms correct normalization.
+
+\subsection{Eigendecomposition}
+
+The eigenvalues and eigenvectors of a tridiagonal Toeplitz matrix are
+known in closed form \cite{grenander1958, kulkarni1999}:
+
+\begin{equation}
+\lambda_k = c_0 + 2c_1\cos\left(\frac{\pi k}{n+1}\right), \quad
+v_k[j] = \sin\left(\frac{\pi k j}{n+1}\right), \quad k,j = 1,\ldots,n
+\label{eq:eig}
+\end{equation}
+
+where $n = n_z = 2^{\text{order}}$. This is the eigendecomposition of the
+discrete 1D Laplacian with Dirichlet boundaries. The Hilbert curve's
+Z-plane projection is spectrally equivalent to a 1D tight-binding chain,
+regardless of the ambient dimension $D$.
+
+Table~\ref{tab:verify} compares Eq.~\ref{eq:eig} with numerical eigenvalues
+for 4D spatial covariance using $f = 1_P$.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+$n$ & $n_z$ & $r$ (analytic vs.\ numerical) & MAD (raw) & MAD (normalized) \\
+\midrule
+4 & 16   & 0.99986 & $1.42 \times 10^{-4}$ & 0.0036 \\
+5 & 32   & 0.99992 & $5.34 \times 10^{-5}$ & 0.0021 \\
+6 & 64   & 0.99996 & $2.18 \times 10^{-5}$ & 0.0013 \\
+7 & 128  & 0.98499 & $1.02 \times 10^{-4}$ & 0.0084 \\
+\bottomrule
+\end{tabular}
+\caption{Verification of Eq.~\ref{eq:eig} against numerical diagonalization.
+$r$ is the Pearson correlation between the $n_z$ analytic and numerical
+eigenvalues sorted by absolute magnitude. The slight degradation at $n=7$
+is caused by boundary cells ($\sim$6\% of total) perturbing the strict
+Toeplitz property at matrix edges.}
+\label{tab:verify}
+\end{table}
+
+The eigendecomposition means that for any function $f$ on the Hilbert
+curve, its Z-plane covariance can be diagonalized analytically --- no
+numerical eigendecomposition is required, even for large $n$.
+
+\subsection{Diagnostic for Curve Continuity}
+
+A candidate space-filling curve can be tested for spatial discontinuities
+by computing its Z-plane covariance for a random indicator $f$. If
+$|C[z, z\pm 2]| > 0$ above machine precision, the curve has non-local
+jumps between Z-planes --- it is not truly face-adjacent.
+
+This test is cheaper than verifying adjacency for every consecutive pair
+along the curve, and more sensitive than measuring the overall adjacency
+percentage: a curve with 95\% adjacency but systematic boundary-crossing
+jumps still produces non-zero $c_2$.
+
+We used this test to detect an implementation error in our own 4D Hilbert
+curve (Section~\ref{sec:example}), where the original ad-hoc algorithm
+achieved only 50\% adjacency and produced $|c_2| \sim 10^{-3}$.
+
+\subsection{Bounded Cross-Plane Correlation}
+
+For spatial indexing applications \cite{moon2001}, the tridiagonal
+structure bounds the ``leakage'' of range queries across Z-planes:
+planes at distance $d > 1$ share \emph{no} spatial neighbor pairs. The
+adjacency graph of Z-planes is exactly a 1D chain, not a higher-dimensional
+graph. A query spanning planes $z_a$ through $z_b$ only has cross-talk
+between adjacent planes; there is no indirect spatial coupling across
+larger separations.
+
+This is a stronger guarantee than the general locality bounds for Hilbert
+curves \cite{moon2001}, which bound the number of clusters but do not
+constrain the correlation between non-adjacent projections.
+
+\section{An Application: Detecting a Broken Curve}
+\label{sec:example}
+
+During an investigation of prime distributions on Hilbert curves
+\cite{wesson2026}, we implemented a 4D Hilbert curve using an ad-hoc
+state machine. The curve was a bijection (every cell visited exactly once)
+and superficially appeared correct. However, the Z-plane covariance matrix
+had non-zero $c_2$ entries ($\sim$10$^{-3}$), flagging a problem.
+
+The measured spatial adjacency was 50.0\% --- exactly half of consecutive
+integers mapped to non-face-adjacent cells. The curve was not a true
+space-filling curve; it had the same class of implementation error
+(incomplete octant-boundary reflection logic) that produces non-local
+jumps.
+
+Replacing the ad-hoc algorithm with the verified Butz algorithm
+\cite{butz1971, hamilton2006} restored 94.2\% adjacency and produced
+$c_2 = 0$ to machine precision. The tridiagonal property served as an
+immediate diagnostic that the curve was broken, without requiring a
+full adjacency audit.
+
+\section{Discussion}
+
+The tridiagonal property is simple enough that it barely qualifies as a
+result --- it follows in one sentence from the definition of
+face-adjacency. The eigenvalue formula is a standard result from the 1950s
+\cite{grenander1958}.
+
+What may be new is the \emph{connection} between these two facts: that
+projecting the Hilbert curve onto its Z-axis and computing spatial
+covariance yields a matrix whose complete spectral decomposition is known
+analytically. If this connection has been noted before, we have not found
+it in the literature. If it has not, then the contribution of this note is
+pointing out something that was always true but never written down.
+
+Whether the practical consequences --- the diagnostic test and the
+cross-plane correlation bound --- are useful depends on whether anyone
+needs to characterize the correlation structure of Hilbert curve
+projections. They arose from a number-theoretic investigation
+\cite{wesson2026} where the covariance matrix was used to test for
+spectral correspondence with the Riemann zeta function. In that context,
+the tridiagonal structure explained why the eigenvalue spectrum took the
+form it did, but did not lead to a proof of the Riemann Hypothesis.
+
+\begin{thebibliography}{99}
+
+\bibitem{butz1971}
+A.~R.~Butz, ``Alternative Algorithm for Hilbert's Space-Filling Curve,''
+\emph{IEEE Trans.\ Computers}, vol.~C-20, no.~4, pp.~424--426, 1971.
+
+\bibitem{grenander1958}
+U.~Grenander and G.~Szeg\H{o}, \emph{Toeplitz Forms and Their
+Applications}, University of California Press, 1958.
+
+\bibitem{hamilton2006}
+C.~Hamilton, ``Compact Hilbert Indices,'' Dalhousie University, Technical
+Report CS-2006-07, 2006.
+
+\bibitem{hilbert1891}
+D.~Hilbert, ``Ueber die stetige Abbildung einer Linie auf ein
+Fl\"{a}chenst\"{u}ck,'' \emph{Mathematische Annalen}, vol.~38, pp.~459--460,
+1891.
+
+\bibitem{kulkarni1999}
+D.~Kulkarni, D.~Schmidt, and S.-K.~Tsui, ``Eigenvalues of tridiagonal
+pseudo-Toeplitz matrices,'' \emph{Linear Algebra and its Applications},
+vol.~297, pp.~63--80, 1999.
+
+\bibitem{moon2001}
+B.~Moon, H.~V.~Jagadish, C.~Faloutsos, and J.~H.~Saltz, ``Analysis of the
+Clustering Properties of the Hilbert Space-Filling Curve,'' \emph{IEEE
+Trans.\ Knowledge and Data Engineering}, vol.~13, no.~1, pp.~124--141,
+2001.
+
+\bibitem{wesson2026}
+R.~Wesson, ``The Hilbert Curve Prime Operator: A Complete Investigation,''
+2026.
+
+\end{thebibliography}
+
+\end{document}

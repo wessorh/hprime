@@ -1,0 +1,245 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\title{The 4D Hilbert Curve Corrected: \\
+Spectral Correlation Stronger Than 3D, \\
+But the Gap to Identity Remains}
+\author{Rick Wesson\\
+Support Intelligence, Inc.}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We correct a critical error in the 4D Hilbert curve implementation used
+in our earlier comparative analysis (Paper IV, Paper V).  The original
+\verb|d2xyzw4D| function achieved only 50\% spatial adjacency between
+consecutive curve points -- the same class of bug that affected our early
+3D work.  Replacing it with the verified Butz algorithm (94.17\%
+adjacency) completely reverses the previous finding: 4D Hilbert plane
+decomposition now shows \emph{stronger} eigenvalue--zeta zero correlation
+than 3D (Pearson $r = -0.990$ at order 4 vs $r = -0.970$ for 3D spatial).
+Nevertheless, the eigenvalue magnitudes still do not converge to the zeta
+zeros (MAD $\approx 0.50$, stable across orders), confirming that the gap
+between correlation and identity cannot be closed by optimizing the
+Hilbert construction.
+\end{abstract}
+
+\section{The Bug}
+
+Our original \verb|d2xyzw4D| function (Paper IV, \S4) was an ad-hoc state
+machine achieving exactly 50.0\% spatial adjacency between consecutive
+integers along the curve.  A correct 4D Hilbert curve, like its 3D
+counterpart, should have $\sim$94\% adjacency (limited only by hypercube
+boundaries where the curve transitions between distant regions).
+
+The bug was identical in nature to the 3D Hilbert curve bug discovered
+and fixed earlier (Paper IV, \S3.1): both used incomplete
+reflection/swap logic that failed to maintain spatial continuity across
+octant boundaries.
+
+\section{The Fix: Butz Algorithm for 4D}
+
+We replaced the broken implementation with the verified Butz algorithm
+(\S1.1 of Hamilton, ``Compact Hilbert Indices'', 2006), parameterized for
+$D=4$ dimensions.  The algorithm processes 4 bits per recursion level
+(one per dimension), using Gray code, rotation, and entry-point state
+variables $(e, d)$ to track sub-hypercube orientation:
+
+\begin{itemize}
+\item \textbf{Gray code:} $\text{gc}(i) = i \oplus (i \gg 1)$
+\item \textbf{Direction map:} $\text{dmap}(i) = g(i) \bmod 4$ where
+   $g(i) = \text{trailing-zeros}(i)$
+\item \textbf{Entry map:} $\text{emap}(i) = \text{gc}(2 \cdot \lfloor(i-1)/2\rfloor)$
+\item \textbf{State update:} $e \leftarrow e \oplus \text{rotLeft}(\text{emap}(w), d+1)$,
+   $d \leftarrow (d + \text{dmap}(w) + 1) \bmod 4$
+\end{itemize}
+
+The corrected curve achieves 94.17\% adjacency across orders 2--7,
+consistent with the theoretical maximum for a 4D space-filling curve
+(limited by the $1 - (1 - 2/2^n)^4$ fraction of boundary cells).
+
+\section{Results}
+
+\subsection{Curve-Adjacent Covariance}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccccc}
+\toprule
+Order & Dim & Primes & Pearson $r$ & Spearman $\rho$ & MAD \\
+\midrule
+4 & 16 & 6,542 & $-$0.970 & $-$1.000 & 0.518 \\
+5 & 32 & 82,025 & $-$0.966 & $-$1.000 & 0.489 \\
+6 & 64 & 1,077,871 & $-$0.866 & $-$1.000 & 0.518 \\
+7 & 128 & 14,630,843 & $-$0.975 & $-$1.000 & 0.520 \\
+\bottomrule
+\end{tabular}
+\caption{Corrected 4D curve-adjacent covariance: eigenvalue--zeta zero correlation.}
+\end{table}
+
+The Pearson correlation is consistently strong ($r = -0.87$ to $-0.98$)
+with the exception of order 6, where a temporary dip occurs.  Order 7
+recovers to $r = -0.975$, suggesting the order-6 dip is a finite-size
+artifact rather than a trend.
+
+\subsection{Spatial Adjacency Covariance}
+
+Using 8 face-neighbors per 4D cell ($\pm x, \pm y, \pm z, \pm w$), we
+construct the spatial covariance matrix analogously to the 3D case:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccccc}
+\toprule
+Order & Dim & Primes & Pearson $r$ & Spearman $\rho$ & MAD \\
+\midrule
+4 & 16 & 6,542 & $-$0.990 & $-$1.000 & 0.561 \\
+5 & 32 & 82,025 & $-$0.989 & $-$1.000 & 0.537 \\
+6 & 64 & 1,077,871 & $-$0.988 & $-$1.000 & 0.538 \\
+7 & 128 & 14,630,843 & $-$0.961 & $-$1.000 & 0.500 \\
+\bottomrule
+\end{tabular}
+\caption{4D spatial adjacency covariance: 8 face-neighbors per cell.}
+\end{table}
+
+Spatial adjacency achieves the strongest Pearson correlations observed:
+$r = -0.990$ at order 4, staying at $r \geq -0.988$ through order 6.
+This outperforms the best 3D spatial result ($r = -0.970$).  The drop to
+$r = -0.961$ at order 7 may reflect the increasing sparsity of primes
+(only 5.5\% of cells are prime at order 7).
+
+\subsection{Comparison with 3D}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+Method & Orders & Best $r$ & MAD range \\
+\midrule
+3D curve-adjacent & 6--10 & $-$0.962 & 0.50--0.55 \\
+3D spatial & 6--10 & $-$0.970 & 0.28 \\
+4D curve-adjacent (corrected) & 4--7 & $-$0.975 & 0.49--0.52 \\
+4D spatial & 4--7 & $-$0.990 & 0.50--0.56 \\
+\bottomrule
+\end{tabular}
+\caption{Cross-dimensional comparison of eigenvalue--zeta zero correlation.}
+\end{table}
+
+The corrected 4D curve \emph{reverses} the previous finding that ``4D
+weakens with order'' (Paper V, \S4).  That conclusion was entirely an
+artifact of the broken 4D curve.  In fact, 4D spatial adjacency produces
+the strongest eigenvalue--zeta zero correlation observed across any
+Hilbert construction to date.
+
+\section{Convergence Analysis}
+
+Despite the strong correlations, the eigenvalue magnitudes do NOT
+converge to the zeta zeros:
+
+\begin{itemize}
+\item \textbf{MAD stability:} The mean absolute deviation between
+   normalized eigenvalue and zeta zero spectra is stable at $\approx
+   0.50$--$0.56$.  Linear regression of MAD vs. order gives slope
+   $-0.018$ ($p = 0.07$) for 4D spatial -- a suggestive but
+   non-significant downward trend.
+
+\item \textbf{No convergence to identity:} Even at $r = -0.990$, the
+   eigenvalues differ from zeta zeros by $\sim$50\% of the spectral
+   range.  This is the same ``correlation $\neq$ identity'' gap that
+   we identified in the 3D case (Paper V).
+
+\item \textbf{Pearson r varies:} The correlation fluctuates across orders
+   ($-0.866$ to $-0.990$) rather than converging monotonically toward
+   $-1.0$.
+\end{itemize}
+
+\section{Discussion}
+
+\subsection{Why 4D Outperforms 3D (in Correlation)}
+
+The 4D Hilbert curve encodes 4 bits per recursion level, mapping to 16
+hyper-octants.  Primes modulo 16 occupy 8 residue classes $\{1, 3, 5, 7,
+9, 11, 13, 15\}$.  The 4D Z-plane decomposition ($2^n$ planes) divides
+primes more finely than 3D, potentially capturing higher-order modular
+structure.
+
+The 4D spatial approach benefits from 8 face-neighbors per cell (vs. 6
+in 3D), providing richer spatial coupling information.  This may explain
+the improved Pearson correlation.
+
+\subsection{The Spearman Triviality}
+
+The Spearman rank correlation $\rho = -1.0$ at every order, for every
+method, is a \emph{trivial} consequence of eigenvalue monotonicity.  Real
+symmetric matrices produce real eigenvalues; when sorted by absolute
+magnitude, these are (almost always) strictly decreasing.  Zeta zeros are
+strictly increasing.  Two monotonic sequences going in opposite
+directions always have $\rho = -1.0$, regardless of whether they share
+any deeper structure.
+
+This is \emph{not} evidence for or against the Hilbert--P\'{o}lya
+conjecture.  It is simply a property of sorted real sequences.
+
+\subsection{What Would Close the Gap?}
+
+The remaining obstacle is the same as in 3D (Paper V, \S2): the
+eigenvalue \emph{magnitudes} must converge to the zeta zero
+\emph{values}, not merely correlate with them.  For the
+Hilbert--P\'{o}lya conjecture to be realized:
+
+\begin{enumerate}
+\item MAD must converge to 0 as order $\to \infty$ -- not observed.
+\item The eigenvalue pair correlation function must match GUE, not
+   anti-GUE -- not tested for 4D in this work but likely unchanged.
+\item The operator must be proven self-adjoint in the infinite-order
+   limit -- no progress.
+\end{enumerate}
+
+None of these criteria are satisfied by the corrected 4D construction.
+
+\section{Conclusion}
+
+The corrected 4D Hilbert curve produces eigenvalue--zeta zero correlation
+of $r = -0.990$ (spatial) and $r = -0.975$ (curve-adjacent), both
+\emph{stronger} than the best 3D results.  The previous finding that
+``4D weakens with order'' was an artifact of a broken curve
+implementation achieving only 50\% spatial adjacency.
+
+However, the fundamental gap between correlation and identity persists.
+The eigenvalues are in the correct \emph{order} but at the wrong
+\emph{magnitudes} (MAD $\approx 0.50$).  No amount of optimization over
+Hilbert curve constructions -- 3D, 4D, spatial, or curve-adjacent -- has
+closed this gap.  The Hilbert--P\'{o}lya pathway, while tantalizingly
+suggestive, cannot prove the Riemann Hypothesis with this class of
+operators.
+
+The corrected 4D results strengthen the case that the Hilbert plane
+operator captures genuine spectral structure of the primes (the
+correlation is too strong and too consistent to be coincidental).  But
+they also reinforce the negative conclusion: capturing spectral structure
+is not the same as reproducing the exact spectrum.  The true
+Hilbert--P\'{o}lya operator, if it exists, must satisfy stronger
+constraints than any finite-order geometric construction has achieved.
+
+\section*{Data Availability}
+
+All code, covariance matrices, and eigenvalue data are available in the
+companion repository under \texttt{pubs/}.  Key files:
+
+\begin{itemize}
+\item \texttt{cov\_4d\_n\{4-7\}\_fixed.json} -- Corrected 4D
+   curve-adjacent covariance matrices
+\item \texttt{cov\_4d\_spatial\_n\{4-7\}.json} -- 4D spatial adjacency
+   covariance matrices
+\item \texttt{eigenvalues\_4d\_n\{4-7\}\_fixed.npy} -- Eigenvalue vectors
+\end{itemize}
+
+\end{document}
