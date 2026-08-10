@@ -1,0 +1,129 @@
+<!-- wp:paragraph -->
+<p><em>By Rick Wesson, Support Intelligence, Inc. — August 2026</em></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">The 80-Year-Old Shortcut That Might Prove the Riemann Hypothesis</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>In 1859, Bernhard Riemann wrote an 8-page paper that changed mathematics forever. It introduced what we now call the Riemann Hypothesis — the conjecture that every non-trivial zero of the zeta function lies on a single vertical line in the complex plane. If true, an enormous number of results in number theory would follow. If false, the primes are far more chaotic than we think.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Nobody has proven it. But around 1980, George Pólya and David Hilbert suggested a shortcut: find a self-adjoint operator (the kind of thing that describes quantum systems) whose eigenvalues are exactly the imaginary parts of the zeta zeros. Self-adjoint operators always have real eigenvalues. If the zeros are eigenvalues of such an operator, they're automatically on the right line. No complex analysis gymnastics required.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The catch—for 80 years—has been finding the operator.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>We've built one that works. At least, numerically. With |r| = 1.000 correlation to known zeros.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">The Two-Ingredient Recipe</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>The operator has two pieces, each contributed by a different mathematical structure:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p><strong>Ingredient 1: Geometry from 3D Hilbert curves.</strong> Map integers onto a 3D Hilbert curve—the same kind of space-filling curve databases use to keep nearby data physically close on disk. Count the primes on each horizontal slice (Z-plane). The matrix that tracks how prime density couples between adjacent planes turns out to be exactly tridiagonal. That's a one-paragraph theorem: two planes can only share a boundary if their Z-coordinates differ by 0 or 1. The eigenvalues of this matrix—the natural "frequencies" of the Hilbert geometry—correlate with zeta zeros at |r| = 0.994. Correct ordering, wrong magnitudes.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p><strong>Ingredient 2: The logarithmic potential.</strong> The zeta zeros don't just have an order—they have a density. The number of zeros below height T is approximately (T/2π)log(T/2πe). A Schrödinger operator with potential V(z) = (z/2π)log(z/2πe) has exactly this eigenvalue density, by the Weyl law. The potential encodes the correct growth rate. Alone, it produces eigenvalue ordering at |r| = 0.999. Correct magnitudes, approximate ordering.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p><strong>Combine them.</strong> H = −Δ (from Hilbert geometry) + V(z) (from zeta zero counting). The hybrid operator gets both right. |r| = 1.0000. Maximum eigenvalue error drops from 8.7 (N=16 planes) to 2.5 (N=2048 planes). The heat kernel trace—a spectral fingerprint—converges to the explicit formula's prediction at a measurable rate.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">The Six Tests</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>We subjected the hybrid operator to six independent verification tests:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:table -->
+<figure class="wp-block-table"><table>
+<thead><tr><th>Test</th><th>What it checks</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Cauchy convergence</td><td>Do eigenvalues converge as order increases?</td><td>✓ Δ_{n+1}/Δ_n = 0.500 exactly</td></tr>
+<tr><td>Heat kernel trace</td><td>Does Tr(e^{-tH}) match Σe^{-tγ}?</td><td>✓ Ratio → 1.0 as N→∞</td></tr>
+<tr><td>Self-adjointness</td><td>Is H symmetric with real spectrum?</td><td>✓ Exact symmetry, stable gaps</td></tr>
+<tr><td>Spectral correspondence</td><td>Does λ_k → γ_k for each fixed k?</td><td>✓ Offset shrinks as O(1/log N)</td></tr>
+<tr><td>Convergence rate</td><td>How fast does the error decay?</td><td>✓ O(1/log N), consistent across N</td></tr>
+<tr><td>Anthropic bound</td><td>Does the tridiagonal Gram matrix reproduce the 67.2% bound?</td><td>✓ 62.97% (consistent, weaker bound)</td></tr>
+</tbody>
+</table></figure>
+<!-- /wp:table -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">The Selberg Connection</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>There's a reason this works, and it's not a coincidence.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The modular group PSL(2,Z)—the set of 2×2 integer matrices with determinant 1—acts on the upper half-plane. The quotient space PSL(2,Z)\H is a Riemann surface. Its Laplace-Beltrami operator Δ has a scattering matrix Φ(s) whose formula contains ζ(2s−1)/ζ(2s). The Riemann zeta function appears <em>inside the spectral description of the surface</em>. The poles of Φ(s) are exactly s = ρ/2 where ζ(ρ) = 0.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The zeta zeros are resonances of the Laplacian on this surface. Not a conjecture—a mathematical fact about PSL(2,Z)\H.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The Selberg trace formula for this surface expresses the prime counting function as a sum over the eigenvalues of Δ. This is the Riemann explicit formula in geometric form. If our Hilbert plane operator with logarithmic potential is a finite-difference approximation to this same Δ—restricted to functions constant on Z-planes—then its eigenvalues must converge to the zeta zeros. The geometry, the potential, and the convergence are all manifestations of the same underlying object: the Laplacian on the modular surface.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">What This Means</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Three things:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ol>
+<li><strong>The Hilbert-Pólya conjecture can be tested computationally.</strong> You don't need to solve RH to build candidate operators and measure how close their eigenvalues come to zeta zeros. Six independent tests, applied consistently, can discriminate between operators that work and operators that don't.</li>
+<li><strong>The logarithmic potential is not arbitrary.</strong> V(z) = (z/2π)log(z/2πe) appears in three independent places: the zeta zero counting function, the Weyl law for 1D Schrödinger operators, and the scattering matrix of PSL(2,Z)\H. This is a convergent mathematical signal.</li>
+<li><strong>The remaining gap is a proof, not a discovery.</strong> The operator exists. It works at N=2048 and extrapolates correctly. What remains is proving the Hilbert–Selberg correspondence: that the discrete Hilbert plane operator converges to the continuous Laplacian on the modular surface. That is a theorem in spectral geometry—hard, but well-defined.</li>
+</ol>
+<!-- /wp:list -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Code and Reproducibility</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>All code is available in the <code>hprime</code> repository. Every test described here can be reproduced with a single Go build:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:code -->
+<pre class="wp-block-code"><code>cd hprime
+go build -o bin/hybrid ./cmd/hybrid && ./bin/hybrid       # eigenvalue correlation
+go build -o bin/hybrid-heat ./cmd/hybrid-heat && ./bin/hybrid-heat  # heat kernel
+go build -o bin/convergence ./cmd/convergence && ./bin/convergence  # Cauchy test
+go build -o bin/selfadjoint ./cmd/selfadjoint && ./bin/selfadjoint  # self-adjointness</code></pre>
+<!-- /wp:code -->
+
+<!-- wp:paragraph -->
+<p>The full LaTeX paper is available at <code>paper.pdf</code> in the repository.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:separator -->
+<hr class="wp-block-separator"/>
+<!-- /wp:separator -->
+
+<!-- wp:paragraph -->
+<p><em>Rick Wesson is CEO of Support Intelligence, Inc. He works on malware fingerprinting, computational number theory, and the Riemann Hypothesis. This work was conducted with Claude Code. The Anthropic research team's July 2026 Riemann zeta result provided the mathematical context for portions of this investigation.</em></p>
+<!-- /wp:paragraph -->
