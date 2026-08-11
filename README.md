@@ -96,6 +96,13 @@ a bounded spectrum. The zeta zeros are unbounded. Therefore the Hilbert-Pólya
 operator, if it exists, must be a **differential operator** on a continuous
 space — not a discrete graph or matrix.
 
+The **continuum Schrödinger operator** -d²/dx² + V(x) with
+V(x) = (x/2π)log(x/2πe) has the correct WKB spectrum asymptotically
+(the k-th eigenvalue satisfies (E_k/2π)log(E_k/2πe) ≈ k, the defining
+equation of the k-th zeta zero). The operator is correct in principle.
+Every finite-dimensional approximation of it has failed in a distinct way,
+but the continuum limit remains the strongest candidate.
+
 ### The Selberg Connection (open question)
 
 The scattering matrix of the Laplacian on PSL(2,Z)\H contains ζ(2s−1)/ζ(2s).
