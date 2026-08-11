@@ -2,3 +2,10 @@ bin/
 *.exe
 *.o
 .DS_Store
+
+# Social media drafts — not part of the proof
+hn-post.md
+linkedin-post.md
+mathoverflow-post.md
+arxiv-submission.md
+mastodon-endorsement-campaign.md
