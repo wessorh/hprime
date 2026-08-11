@@ -1,8 +1,10 @@
-# hprime — A Discrete Hilbert-Pólya Operator
+# hprime — Hilbert Curve Prime Density and the Riemann Hypothesis
 
-**The first explicitly constructible candidate for the Hilbert-Pólya operator whose eigenvalues converge to the Riemann zeta zeros.**
+> **⚠️ Status (August 2026):** The `unified-proof.pdf` in this repository contains a **circular argument**. The hybrid operator's diagonal is populated with the zeta zeros themselves, so the proof that its eigenvalues converge to those zeros is a tautology. We are leaving the paper accessible for transparency but it does **not** constitute a proof of RH. See [Grok's analysis](#community-review) and our [response](response-plan.md).
 
-> 📄 **[Unified Paper (PDF)](unified-proof.pdf)** — 9 pages, 3-part proof, 18 references. The complete construction and proof of convergence.
+**The non-circular finding:** When primes alone—without any zeta zeros—are mapped onto 3D Hilbert curves and the cumulative excess density is used as a potential, the eigenvalues of the resulting operator independently predict zeta zero ordering at |r| = 0.997. This is a genuine, non-circular computational discovery. See `cmd/genuine/` and the [genuine construction paper](genuine-construction.tex).
+
+> 📄 **[Genuine Construction Paper (PDF)](genuine-construction.pdf)** — Non-circular: predicts zeta zero ordering from prime density alone.
 
 ## Overview
 
