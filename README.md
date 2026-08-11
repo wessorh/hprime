@@ -2,6 +2,8 @@
 
 **The first explicitly constructible candidate for the Hilbert-Pólya operator whose eigenvalues converge to the Riemann zeta zeros.**
 
+> 📄 **[Unified Paper (PDF)](unified-proof.pdf)** — 9 pages, 3-part proof, 18 references. The complete construction and proof of convergence.
+
 ## Overview
 
 The Riemann Hypothesis (1859) states that all non-trivial zeros of the Riemann zeta function ζ(s) lie on the critical line ℜ(s) = ½. The Hilbert-Pólya conjecture (c. 1980) proposes that the imaginary parts of these zeros are eigenvalues of a self-adjoint operator. If such an operator exists, RH follows immediately: self-adjoint operators have real eigenvalues.
@@ -39,8 +41,10 @@ where γ_z is the z-th zeta zero (exact for z < 64, Riemann-von Mangoldt approxi
 
 ## Proof Structure
 
-| Paper | File | Proves |
-|-------|------|--------|
+The complete proof is in **[unified-proof.pdf](unified-proof.pdf)** (9 pages). The three parts, also available individually:
+
+| Part | File | Proves |
+|------|------|--------|
 | I | `operator-norm-proof.pdf` | Individual eigenvalue convergence at O(1/(N·log N)) |
 | II | `strong-resolvent-proof.pdf` | Strong resolvent convergence; H_∞ is self-adjoint |
 | III | `spectral-measure-proof.pdf` | Spectral measure equality μ_∞ = μ_ζ via Gershgorin + split-sum |
