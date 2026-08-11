@@ -23,20 +23,20 @@
 \maketitle
 
 \begin{abstract}
-We report a computational discovery: when primes are mapped onto a 3D
-Hilbert curve and the cumulative excess density on each Z-plane is used
-as the potential in a discrete Schr\"{o}dinger operator $H = -\Delta +
-V(z)$, the eigenvalues of $H$ independently predict the ordering of the
-imaginary parts of the Riemann zeta zeros with Pearson correlation
-$|r| = 0.997$. No zeta zeros, no Riemann--von Mangoldt formula, and no
-explicit formula are used in the construction. The potential $V(z)$ is
-computed solely from the prime counts on each Hilbert plane, making this
-a genuine first-principles prediction. We also prove that the Gram matrix
-of Hilbert plane indicator functions is exactly tridiagonal---a
-combinatorial theorem with a one-paragraph proof. We conjecture that the
-cumulative prime excess on Hilbert planes satisfies a discrete analog of
-the Riemann explicit formula, which would explain the observed
-correlation and provide a non-circular path to the Riemann Hypothesis.
+We report a computational investigation into whether prime density on 3D
+Hilbert curves encodes the zeta zero spectrum. When primes are mapped onto
+a Hilbert curve and the cumulative excess density on each Z-plane is used
+as the potential in a discrete Schr\"{o}dinger operator, the eigenvalues
+correlate with the imaginary parts of the Riemann zeta zeros at
+$|r| = 0.985$ for small systems ($N=64$ planes, $4{,}096$ primes).
+However, the correlation \emph{decreases} as more primes are included,
+falling to $|r| = 0.860$ with $16$ million primes at the same order.
+This is the behavior of a small-$N$ artifact, not a convergent signal.
+We conclude that prime density on Hilbert planes does \emph{not} provide
+a first-principles construction of the Hilbert--P\'{o}lya operator.
+We also prove that the Gram matrix of Hilbert plane indicator functions
+is exactly tridiagonal---a combinatorial theorem that is independent
+of the prime distribution and may be of independent interest.
 \end{abstract}
 
 \section{Introduction}
@@ -130,40 +130,53 @@ geometric fact about the Hilbert curve.
 
 \section{Numerical Results}
 
-We computed the genuine operator for orders $n = 4$ through $n = 8$
-($N = 16$ to $N = 256$ planes). For each order:
-
-\begin{enumerate}
-\item Generate all primes up to $8^n$ (parallel sieve)
-\item Map each prime onto the 3D Hilbert curve
-\item Count primes per Z-plane and compute $d(z)$ and $V(z)$
-\item Build the tridiagonal matrix $H_N$
-\item Compute eigenvalues via the tridiagonal cosine formula
-\item Compare eigenvalue ordering to known zeta zeros (from the
-  literature, used only for comparison, not construction)
-\end{enumerate}
+We computed the genuine operator for order $n = 6$ ($N = 64$ planes)
+across increasing prime ranges. For each range, the construction is
+identical except for the number of primes included:
 
 \begin{table}[htbp]
 \centering
-\caption{Genuine construction: eigenvalue correlation with zeta zeros}
-\begin{tabular}{@{}cccc@{}}
+\caption{Correlation vs.\ prime range at fixed order $n=6$ ($N=64$ planes)}
+\begin{tabular}{@{}ccc@{}}
 \toprule
-\textbf{Order $n$} & \textbf{Planes $N$} & \textbf{$|r|$} &
-\textbf{Construction} \\
+\textbf{Primes up to} & \textbf{Prime count} & \textbf{$|r|$} \\
 \midrule
-4 & 16  & 0.9178 & Primes only \\
-5 & 32  & 0.9071 & Primes only \\
-6 & 64  & 0.8998 & Primes only \\
-7 & 128 & 0.9934 & Primes only (hashed) \\
-8 & 256 & 0.9966 & Primes only (hashed) \\
+$2^{12} = 4{,}096$       & 564    & 0.9853 \\
+$2^{15} = 32{,}768$      & 3,514  & 0.9427 \\
+$2^{18} = 262{,}144$     & 23,008 & 0.8897 \\
+$2^{21} = 2{,}097{,}152$ & 155,612 & 0.8670 \\
+$2^{24} = 16{,}777{,}216$ & 1,077,791 & 0.8599 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-For orders $n \geq 7$, the exact 3D Hilbert curve requires $8^n$ grid
-cells (over 2 million for $n=7$), so we use a bit-reversed hashed plane
-assignment as an approximation. The correlation \emph{improves} with
-order, from $|r| = 0.90$ at $n=6$ to $|r| = 0.997$ at $n=8$.
+\begin{table}[htbp]
+\centering
+\caption{Correlation vs.\ order with hashed plane assignment}
+\begin{tabular}{@{}ccc@{}}
+\toprule
+\textbf{Order $n$} & \textbf{Planes $N$} & \textbf{$|r|$} \\
+\midrule
+4 & 16  & 0.9946 \\
+5 & 32  & 0.9929 \\
+6 & 64  & 0.9919 \\
+7 & 128 & 0.9761 \\
+8 & 256 & 0.9412 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two trends are evident. First, at fixed order, increasing the number of
+primes \emph{weakens} the correlation: $|r|$ drops from $0.985$ to
+$0.860$ as the prime count increases by a factor of $1{,}900$. Second,
+at fixed prime density, increasing the number of planes \emph{also}
+weakens the correlation: $|r|$ drops from $0.995$ at $N=16$ to $0.941$
+at $N=256$.
+
+Both trends are characteristic of a \textbf{small-$N$ artifact}: the
+apparent alignment of eigenvalues with zeta zeros is strongest at the
+smallest scales and decays as the system size increases. This is the
+opposite of what convergence to a limit operator would require.
 
 \section{Why This Is Not Circular}
 
@@ -211,17 +224,34 @@ have not yet performed this test, but the eigenvalue correlation
 
 \section{Discussion}
 
-This paper reports a computational discovery, not a proof. The
-correlation $|r| = 0.997$ between the genuine operator's eigenvalues
-and the zeta zeros is statistically significant and non-circular, but
-it does not constitute a proof of RH. Proving Conjecture~\ref{conj:explicit}
-would close the gap.
+This paper reports a negative result: the correlation between prime
+density on Hilbert planes and zeta zero ordering is a small-$N$ artifact
+that decays as the system size increases. The $|r| = 0.985$ observed
+at the smallest scale ($N=64$ planes, $4{,}096$ primes) is
+statistically significant ($p < 10^{-4}$ by permutation test) but does
+not represent an asymptotic property. The correlation degrades
+monotonically as more primes are included, reaching $|r| = 0.860$ with
+$16$ million primes.
 
-The significance of the result is: \textbf{prime numbers, when organized
-by the Hilbert curve's geometry, encode the zeta zero spectrum.} This
-encoding is not an artifact of the construction or a tautology---it is
-an empirical fact about the joint distribution of primes and Hilbert
-curve coordinates.
+We are grateful to xAI's Grok for identifying the circularity in an
+earlier version of this work (the hybrid operator paper, archived in
+\texttt{circular/}) and for prompting the scaling analysis that
+revealed the artifact. The rapid identification of both the circularity
+and the scaling problem demonstrates the value of automated
+mathematical review.
+
+The tridiagonal theorem (Theorem~\ref{thm:tridiag}) survives: the Gram
+matrix of Hilbert plane indicator functions is exactly tridiagonal,
+independent of the prime distribution. This is a publishable
+combinatorial geometry result.
+
+\section*{Acknowledgments}
+
+We thank xAI's Grok for identifying the circularity in the hybrid
+operator construction (\texttt{circular/unified-proof.pdf}) and for
+the analysis that prompted the scaling tests revealing the small-$N$
+artifact in this work. The tridiagonal theorem was developed in
+collaboration with Claude Code.
 
 \begin{thebibliography}{9}
 
