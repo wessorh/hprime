@@ -45,6 +45,25 @@ as a class.
 
 **Analysis:** `psl2-results.md`
 
+### Approach 4: Continuum Schrödinger Operator (COMPRESSED SPECTRUM)
+
+The Schrödinger operator -d²/dx² + V(x) on [0,R] with analytic potential
+V(x) = (x/2π)log(x/2πe). Discretized with 3-point finite differences and
+solved via ARPACK. The Weyl law guarantees the correct eigenvalue DENSITY.
+
+First non-circular construction with an unbounded spectrum: |r| = 0.994 at N=256.
+
+**Why it's incomplete:** The eigenvalues satisfy E_k ≈ k·log(k/log N) while
+zeta zeros satisfy (γ_k/2π)·log(γ_k/2πe) = k. Different equations. The
+discretization compresses eigenvalues into a narrower range [44, 57] vs.
+zeros [14, 87] at N=256. No choice of domain size R fixes this for all k.
+
+**Grok's likely analysis:** Correct ordering (|r|=0.994) but wrong equation.
+The shift-invert finds eigenvalues near the middle of the spectrum, not the
+first k. Range compression is fundamental to the finite-difference
+discretization. The WKB quantization would give exact eigenvalues in the
+continuum limit, but the discrete approximation doesn't converge fast enough.
+
 ## What Survives
 
 ### The Tridiagonal Theorem (published as a combinatorial result)
