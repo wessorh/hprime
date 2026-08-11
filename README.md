@@ -1,127 +1,138 @@
-# hprime — Hilbert Curve Prime Density and the Riemann Hypothesis
+# hprime — A Computational Investigation into the Hilbert-Pólya Conjecture
 
-> **⚠️ Status (August 2026):** The `unified-proof.pdf` in this repository contains a **circular argument**. The hybrid operator's diagonal is populated with the zeta zeros themselves, so the proof that its eigenvalues converge to those zeros is a tautology. We are leaving the paper accessible for transparency but it does **not** constitute a proof of RH. See [Grok's analysis](#community-review) and our [response](response-plan.md).
+> **Status (August 2026):** This repository documents a computational search for the
+> Hilbert-Pólya operator — the self-adjoint operator whose eigenvalues would be the
+> Riemann zeta zeros. Three distinct approaches were investigated and all three were
+> found to fail, for different and instructive reasons. The repository is preserved
+> as a record of what was attempted, what was learned, and why each approach failed.
 
-**The non-circular finding:** When primes alone—without any zeta zeros—are mapped onto 3D Hilbert curves and the cumulative excess density is used as a potential, the eigenvalues of the resulting operator independently predict zeta zero ordering at |r| = 0.997. This is a genuine, non-circular computational discovery. See `cmd/genuine/` and the [genuine construction paper](genuine-construction.tex).
+## What We Tried
 
-> 📄 **[Genuine Construction Paper (PDF)](genuine-construction.pdf)** — Non-circular: predicts zeta zero ordering from prime density alone.
+### Approach 1: The Hybrid Operator (CIRCULAR)
 
-## Overview
+A discrete Schrödinger operator H = −Δ + V(z) with logarithmic potential on the
+Hilbert plane index. Achieved |r| = 1.0000 correlation with zeta zeros.
 
-The Riemann Hypothesis (1859) states that all non-trivial zeros of the Riemann zeta function ζ(s) lie on the critical line ℜ(s) = ½. The Hilbert-Pólya conjecture (c. 1980) proposes that the imaginary parts of these zeros are eigenvalues of a self-adjoint operator. If such an operator exists, RH follows immediately: self-adjoint operators have real eigenvalues.
+**Why it failed:** The diagonal was populated with the zeta zeros themselves
+(γ₀, γ₁, ..., γ_{N-1}). The Gershgorin circle theorem guarantees eigenvalues
+stay near the diagonal entries. The "proof" that eigenvalues converge to zeta
+zeros was a tautology. [Identified by xAI's Grok.]
 
-This repository contains:
+**Paper:** `circular/unified-proof.pdf` (archived with disclaimer)
 
-1. **The hybrid operator** H = −Δ + V(z) — a discrete Schrödinger operator on the Hilbert plane index whose eigenvalues converge to the zeta zeros with |r| = 1.0000 correlation
-2. **Numerical validation** across 11 independent test programs (Cauchy convergence, heat kernel trace, self-adjointness, spectral correspondence, convergence rate, Anthropic bound validation)
-3. **Three proof papers** establishing the chain from eigenvalue convergence → strong resolvent convergence → spectral measure equality → RH
+### Approach 2: The Genuine Construction (SMALL-N ARTIFACT)
 
-## Quick Start
+A non-circular construction using only prime density on Hilbert planes. The
+potential V(z) was the cumulative excess of primes on each Z-plane — no zeta
+zeros were used. Achieved |r| = 0.985 at N=64 planes with 4,096 primes.
 
-```bash
-# Build everything
-cd hprime
-go build -o bin/hybrid ./cmd/hybrid/ && ./bin/hybrid
-go build -o bin/hybrid-heat ./cmd/hybrid-heat/ && ./bin/hybrid-heat
-go build -o bin/hybrid-2048 ./cmd/hybrid-2048/ && ./bin/hybrid-2048
-go build -o bin/convergence ./cmd/convergence/ && ./bin/convergence
-go build -o bin/selfadjoint ./cmd/selfadjoint/ && ./bin/selfadjoint
-go build -o bin/spectral ./cmd/spectral/ && ./bin/spectral
-go build -o bin/anthropic-validate ./cmd/anthropic-validate/ && ./bin/anthropic-validate
-```
+**Why it failed:** The correlation degraded as more primes were added (|r| fell
+from 0.985 to 0.860 with 16 million primes at the same order). This is the
+behavior of a small-N artifact, not a convergent signal.
 
-## The Hybrid Operator
+**Paper:** `genuine-construction.pdf` (updated with scaling analysis)
 
-For N planes (N = 2^n), the operator H_N is the N×N symmetric tridiagonal matrix:
+### Approach 3: PSL(2,Z/NZ) Cayley Graph (BOUNDED SPECTRUM)
 
-```
-H[z][z]   = γ_z              (zeta zero at index z — the logarithmic potential)
-H[z][z+1] = (1/N)·√(γ_z·γ_{z+1})   (Hilbert face-adjacency coupling)
-```
+The Laplacian on the Cayley graph of the modular group modulo N. A non-circular
+construction motivated by the Selberg trace formula. Initial Lanczos results
+suggested |r| = 0.998, but the eigensolver was producing spurious Ritz values.
 
-where γ_z is the z-th zeta zero (exact for z < 64, Riemann-von Mangoldt approximation thereafter).
+**Why it failed:** ARPACK revealed the true eigenvalues are bounded in [0, 8]
+because the Laplacian of any d-regular graph has eigenvalues in [0, 2d].
+Zeta zeros are unbounded. Finite-degree Cayley graphs are provably eliminated
+as a class.
 
-## Proof Structure
+**Analysis:** `psl2-results.md`
 
-The complete proof is in **[unified-proof.pdf](unified-proof.pdf)** (9 pages). The three parts, also available individually:
+## What Survives
 
-| Part | File | Proves |
-|------|------|--------|
-| I | `operator-norm-proof.pdf` | Individual eigenvalue convergence at O(1/(N·log N)) |
-| II | `strong-resolvent-proof.pdf` | Strong resolvent convergence; H_∞ is self-adjoint |
-| III | `spectral-measure-proof.pdf` | Spectral measure equality μ_∞ = μ_ζ via Gershgorin + split-sum |
-| Main | `paper.pdf` | Complete construction + numerical validation (5 pages) |
-| Selberg | `selberg-connection.md` | Connection to Laplacian on PSL(2,Z)\H |
+### The Tridiagonal Theorem (published as a combinatorial result)
 
-The proof chain: eigenvalues converge → operators converge in strong resolvent sense → limit is self-adjoint → spectral measure equals zeta zero measure → eigenvalues ARE the zeta zeros → all zeros are real → by functional equation symmetry, all lie on ℜ(s) = ½.
+**Theorem:** The Gram matrix of Hilbert plane indicator functions is exactly
+tridiagonal. Two Z-planes can be coupled by Hilbert adjacency only if their
+coordinates differ by at most 1.
 
-## Test Programs
+*Proof:* Two cells in a 3D grid are face-adjacent iff their coordinates differ
+by exactly one unit in exactly one axis. The Z-coordinate change requires
+traversing a face boundary. Two planes differing by more than 1 cannot be
+directly coupled. □
 
-| Program | What it tests | Key result |
-|---------|--------------|------------|
-| `cmd/hybrid` | Eigenvalue correlation | |r| = 1.0000 |
-| `cmd/hybrid-heat` | Heat kernel trace | Ratio → 1.0 as N→∞ |
-| `cmd/hybrid-2048` | Large-N validation | max error = 2.51 at N=2048 |
-| `cmd/convergence` | Cauchy criterion | Δ_{n+1}/Δ_n = 0.500 (exact) |
-| `cmd/selfadjoint` | Symmetry + gaps | Exact symmetry, min gap ≥ 1.4 |
-| `cmd/spectral` | Correspondence + rate | O(1/log N) convergence |
-| `cmd/anthropic-validate` | Anthropic 67.2% bound | 62.97% consistent (weaker, independent) |
-| `cmd/genuine` | First-principles from primes | |r| = 0.997 — no zeros used |
-| `cmd/schrodinger` | WKB Schrödinger operator | |r| = 0.999 — correct magnitudes |
-| `cmd/heat-kernel` | Pure tridiagonal heat kernel | Diverges — identity limit proven |
-| `cmd/nnn-coupling` | Next-nearest-neighbor | Gap is continuous, not finite-rank |
+This is a one-paragraph combinatorial geometry result, independent of primes
+and independent of RH. It is a publishable contribution.
 
-## Key Mathematical Facts
+### A Taxonomy of Failure Modes
 
-### The Tridiagonal Theorem
+Each approach failed for a different fundamental reason:
 
-The Gram matrix of Hilbert plane indicator functions is exactly tridiagonal. Proof: two Z-planes can be coupled by the Hilbert adjacency only if their Z-coordinates differ by at most 1 (face-adjacent cells in 3D differ by exactly one coordinate by exactly one step). One paragraph.
+| Approach | Failure mode | Why it's fundamental |
+|----------|-------------|---------------------|
+| Hybrid | Circular | Gershgorin guarantees proximity to known answer |
+| Genuine | Small-N artifact | Signal doesn't survive scaling |
+| PSL(2,Z/NZ) | Bounded spectrum | d-regular Laplacian always in [0,2d] |
+| Tridiagonal | Identity limit | Cosine eigenvalues → 1 as N→∞ |
 
-### The Logarithmic Potential
+The common thread: any operator built from a **finite-degree graph** will have
+a bounded spectrum. The zeta zeros are unbounded. Therefore the Hilbert-Pólya
+operator, if it exists, must be a **differential operator** on a continuous
+space — not a discrete graph or matrix.
 
-V(z) = (z/2π)·log(z/2πe) is the asymptotic inverse of the zeta zero counting function. The Weyl law for −Δ + V gives N(λ) = (λ/2π)log(λ/2πe), matching the Riemann-von Mangoldt formula.
+### The Selberg Connection (open question)
 
-### The Selberg Connection
-
-The scattering matrix Φ(s) of the Laplacian on PSL(2,Z)\H contains ζ(2s−1)/ζ(2s). The zeta zeros are resonances of this operator. H_N is conjectured to be a finite-difference approximation to this Laplacian, restricted to the N-th congruence subspace.
+The scattering matrix of the Laplacian on PSL(2,Z)\H contains ζ(2s−1)/ζ(2s).
+The zeta zeros ARE resonances of this operator — a theorem, not a conjecture.
+The challenge is constructing a computable discrete approximation whose
+spectrum converges to the continuous spectrum. Our Cayley graph attempt failed
+because finite-degree graphs have bounded spectra. An **expander graph family**
+with **growing degree** (so the spectral range grows) might succeed.
 
 ## Repository Structure
 
 ```
 hprime/
-├── main.go                     # Core library: primes, Hilbert curves, operators
-├── cmd/                        # Test programs (11 total)
-│   ├── anthropic-validate/     # 62.97% vs 67.2% bound
-│   ├── convergence/            # Cauchy criterion
-│   ├── genuine/                # First-principles from prime density
-│   ├── heat-kernel/            # Pure tridiagonal trace (negative result)
-│   ├── hybrid/                 # Hybrid operator |r|=1.0000
+├── cmd/                        # 11 test programs (all reproducible)
+│   ├── anthropic-validate/     # 62.97% vs 67.2% Anthropic bound
+│   ├── convergence/            # Cauchy criterion (exact ratio 0.500/octave)
+│   ├── genuine/                # Genuine prime-density construction
+│   ├── heat-kernel/            # Pure tridiagonal trace (diverges)
+│   ├── hybrid/                 # Hybrid operator (circular)
 │   ├── hybrid-heat/            # Heat kernel convergence
-│   ├── hybrid-2048/            # Large-N scaling (N=2048)
-│   ├── nnn-coupling/           # Bandwidth independence (4.3% gap)
-│   ├── ndhprime/               # N-dimensional Hilbert prime tool
-│   ├── primecube/              # 3D visualization
+│   ├── hybrid-2048/            # Large-N scaling
+│   ├── nnn-coupling/           # Bandwidth independence
 │   ├── schrodinger/            # WKB Schrödinger operator
 │   ├── selfadjoint/            # Self-adjointness verification
 │   └── spectral/               # Spectral correspondence + rates
-├── pubs/                       # Eigenvalue data + covariance matrices
-├── paper.tex / paper.pdf       # Main paper (5 pages)
-├── operator-norm-proof.tex/pdf # Paper I
-├── strong-resolvent-proof.tex/pdf  # Paper II
-├── spectral-measure-proof.tex/pdf  # Paper III
+├── circular/                   # Archived circular proofs (with disclaimer)
+├── genuine-construction.pdf    # Non-circular paper (documents small-N artifact)
+├── paper.pdf                   # Original main paper
 ├── selberg-connection.md       # Selberg trace formula analysis
-├── PROGRESS.md                 # Full progress report
-├── rh-proof-plan.md            # Original 5-theorem plan
-├── blog-*.html                 # Blog posts (WordPress-ready)
+├── psl2-results.md             # Cayley graph investigation (with ARPACK correction)
+├── response-plan.md            # Response to Grok's circularity analysis
+├── grok-round2-plan.md         # Anticipating second-round critiques
+├── grok-round3-prediction.md   # Anticipating third-round critiques
+├── PROGRESS.md                 # Full investigation progress report
 └── README.md                   # This file
 ```
 
-## Status
+## Quick Start
 
-The three proof papers establish the logical chain from eigenvalue convergence to RH. The numerical evidence (11 independent tests, N up to 2048) is consistent with all analytic bounds. The remaining step for full mathematical acceptance is peer review of the improved eigenvalue bound (O(1/(N·log N)) via sin² averaging in the Davis-Kahan estimate) by an independent spectral theorist.
+```bash
+cd hprime
+go build -o bin/hybrid ./cmd/hybrid && ./bin/hybrid          # circular hybrid (|r|=1.000)
+go build -o bin/genuine ./cmd/genuine && ./bin/genuine       # non-circular (small-N artifact)
+go build -o bin/convergence ./cmd/convergence && ./bin/convergence  # Cauchy proof
+go build -o bin/selfadjoint ./cmd/selfadjoint && ./bin/selfadjoint  # Self-adjointness
+```
+
+## Acknowledgments
+
+- **xAI's Grok** identified the circularity in the hybrid operator construction
+  and prompted the scaling analysis that revealed the small-N artifact
+- **Claude Code** assisted with the computational infrastructure and mathematical proofs
+- The **Anthropic research team's** July 2026 Riemann zeta bound motivated the
+  initial investigation
+- The **Hilbert-Pólya conjecture** (c. 1980) has been the guiding framework
 
 ## Author
 
 **Rick Wesson** — CEO, Support Intelligence, Inc.
-
-This work was conducted with Claude Code. The Anthropic research team's July 2026 Riemann zeta bound motivated the comparison between the tridiagonal Gram matrix and the analytic quadratic form. The Hilbert-Pólya conjecture has been the guiding framework throughout.
