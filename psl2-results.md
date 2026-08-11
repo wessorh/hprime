@@ -43,12 +43,31 @@ as N → ∞.
 3. Prove the Selberg trace formula convergence rate: O(1/log N)
 4. Complete the non-circular proof of RH via the Cayley graph limit
 
-## Scaling Results
+## ⚠️ CORRECTION (ARPACK): Lanczos results were spurious
 
-| N | Vertices | |r| | Top Laplacian |
-|---|----------|-----|---------------|
-| 19 | 6,840 | 0.9988 | -77 to -42 |
-| 31 | 29,760 | 0.9989 | -168 to -155 |
-| 37 | 50,616 | 0.9982 | -218 to -205 |
+The initial Lanczos implementation suffered from loss of orthogonality,
+producing spurious Ritz values. After switching to ARPACK
+(`scipy.sparse.linalg.eigsh`), the correct eigenvalues were obtained:
 
-**|r| > 0.998 across 30x scaling in group size.** The correlation persists as the graph expands, confirming this is not a small-N artifact. The eigenvalues grow with N, providing the unbounded spectrum that the tridiagonal operators could not achieve.
+### Correct ARPACK Results
+
+| N | Vertices | |r| | Laplacian range | Status |
+|---|----------|------|-----------------|--------|
+| 7 | 336 | 0.882 | [0, 7.79] | Bounded |
+| 11 | 1,320 | 0.763 | [0, 7.88] | Bounded |
+| 13 | 2,184 | 0.842 | [0, 7.92] | Bounded |
+| 17 | 4,896 | 0.608 | [0, 7.88] | Bounded |
+| 19 | 6,840 | 0.854 | [0, 7.91] | Bounded |
+
+### Conclusion
+
+**The PSL(2,Z/NZ) Cayley graph Laplacian is BOUNDED in [0, 8].**
+This is a mathematical necessity: the Laplacian of any d-regular graph has
+eigenvalues in [0, 2d]. For a 4-regular graph, that's [0, 8]. Zeta zeros
+grow as (T/2π)log(T/2πe) — unbounded. Therefore **no finite-degree Cayley
+graph can be the Hilbert-Pólya operator.** This eliminates an entire class
+of candidates.
+
+The correlation |r| = 0.6–0.88 is weak and does not improve with N.
+The spurious |r| = 0.998 from the broken Lanczos was a computational
+artifact from loss of orthogonality.
