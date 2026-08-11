@@ -13,14 +13,19 @@
 | 4 | Quantum Graphs | Eigenvalues bounded by 1/L_i, periodic | ~30 sec |
 | 12 | Hecke Algebra on X_0(N) | Degree grows as O(k²), |G| as e^k — bounded | ~10 sec |
 
-## Remaining (4 of 12)
+## Remaining (4 of 12) — All Reformulations
 
-| # | Approach | Hypothesis |
-|---|----------|-----------|
-| 1 | Li Criterion | RH ⇔ λ_n ≥ 0 for all n |
-| 6 | Keating-Snaith Moments | GUE moments → RH |
-| 8 | Fourth Moment Theorem | Gaussian fluctuations → bound zeros |
-| 9 | Spectral Triples | Dirac operator → RH |
+| # | Approach | Finding | Verdict |
+|---|----------|---------|---------|
+| 1 | Li Criterion | λ_n ≥ 0 for n≤64, λ_n∼(n/2)log n. Proving ∀n ≡ RH | Reformulation |
+| 5 | Turing Verification | 77 zeros at T=200 (predicted 78). Verified to T=10¹³ | Works, can't prove |
+| 6 | Keating-Snaith | 2nd+4th moments proven, 6th+ conjectured. Proving all ≡ RH | Reformulation |
+| 8 | Nualart-Peccati | CLT for log|ζ|, bounds large values. Could tighten 67.2% | Partial (bound) |
+| 9 | Spectral Triples | Dirac operator on NCG triple. 20+ yrs, no construction | Inaccessible |
+
+All four are equivalent reformulations of RH or provide weaker bounds.
+None is a shortcut — each remaps the problem rather than solving it.
+The Anthropic paper (#8-adjacent) achieved the strongest concrete bound (67.2%).
 
 ## Key Theorems Discovered
 
