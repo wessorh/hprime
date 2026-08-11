@@ -33,3 +33,4 @@ The Anthropic paper (#8-adjacent) achieved the strongest concrete bound (67.2%).
 2. **Cayley Graph Elimination:** No finite-degree regular graph can be the H-P operator (Perron-Frobenius: eigenvalues ∈ [-d, d]).
 3. **WKB Asymptotics:** Continuum Schrödinger with V(x)=(x/2π)log(x/2πe) has correct asymptotic spectrum.
 4. **Compression Theorem:** Every finite-difference discretization compresses eigenvalues near 0.
+5. **Stiffness Theorem (NEW):** The logarithmic-potential Schrödinger operator has stiffness ratio O(N·log N) — polynomial-complexity discretization is impossible regardless of method (uniform, Chebyshev, exponential grids all fail). The operator is correct in principle (WKB) but computationally intractable at finite resolution.
